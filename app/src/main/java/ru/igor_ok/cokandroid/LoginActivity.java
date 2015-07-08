@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -17,7 +18,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import java.util.ArrayList;
-import java.util.List;
+
 
 public class LoginActivity extends ActionBarActivity {
     protected EditText loginField;
@@ -26,14 +27,14 @@ public class LoginActivity extends ActionBarActivity {
     protected TextView loginMessage;
     protected Intent intent;
     CokModel cm;
-    CokHelper ch;
+    AuthHelper ah;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
         cm = new CokModel(this); //Here the context is passing
-        ch = new CokHelper();
+        ah = new AuthHelper();
 
         loginField = (EditText) findViewById(R.id.login_field);
         passwordField = (EditText) findViewById(R.id.password_field);
@@ -66,115 +67,29 @@ public class LoginActivity extends ActionBarActivity {
     }
 
 
-    /**
-     * Created by igor on 03.07.15.
-     */
-    private class AuthParams {
-        public String login;
-        public String password;
-    }
-    private class Auth {
-        public String jsonrpc = "2.0";
-        public String method = "user.Authorise";
-        public List<AuthParams> params = new ArrayList<AuthParams>();
-    }
-
-    private class AuthResult {
-        public String _id;
-        public String token;
-        public String login;
-        public String email;
-        public String group;
-        public Integer status;
-    }
-    private class Authorised {
-        public String jsonrpc;
-        public Integer id;
-        public List<AuthResult> result = new ArrayList<AuthResult>();
-    }
-
-
-
-    private class CokHelper {
-        private String login = "";
-        private String password = "";
-        private boolean validated = false;
-
-
-        public void setLogin (String login) {
-            this.login = login;
-        }
-        public void setPassword (String password) {
-            this.password = password;
-        }
-        public String getLogin () {
-            return this.login;
-        }
-        public String getPassword () {
-            return this.password;
-        }
-
-
-        public boolean isValid () {
-            if (this.login.length() == 0) {
-                loginField.setError("Login is required");
-            }
-            if (this.password.length() == 0) {
-                passwordField.setError("Password is required");
-            }
-            if (this.login.length() > 0 && this.password.length() > 0) {
-                this.validated = true;
-            }
-            return this.validated;
-        }
-        public String getJson() {
-            Auth auth = new Auth();
-            GsonBuilder builder = new GsonBuilder();
-            builder.setPrettyPrinting().serializeNulls();
-            Gson gson = builder.create();
-
-            AuthParams aParam = new AuthParams();
-            aParam.login = this.login;
-            aParam.password = this.password;
-            auth.params.add(aParam);
-
-            return gson.toJson(auth);
-        }
-    }
-
     private class HttpAsyncTask extends AsyncTask<String, Void, String> {
         @Override
         protected String doInBackground(String... urls) {
-            return cm.POST(urls[0], ch.getJson());
+            try {
+                return cm.POST(urls[0], ah.getJson());
+            } catch (Exception e) {
+                Log.e("Error ", "" + e.getMessage());
+            }
+            return null;
         }
         @Override
         protected void onPostExecute(String result) {
-/*
-{
-"jsonrpc":"2.0",
-"id":1,
-"result":[
-    {
-    "_id":"54f2f627b87d9dae196238a5",
-    "login":"demo",
-    "email":"demo@demo",
-    "group":"SimpleUser",
-    "created":"2015-03-01T11:21:11.315Z",
-    "status":1,
-    "token":"ec3f305659fee7603497256f2630bf19fa753c973923fcad7d059db3100df044832f0de347a71421a811681480a8608a",
-    "selfFriendRequests":[],
-    "friends":[{"_id":"5570ab064c32a55b1585d7b9"},{"_id":"54f8a9344b0baf021614f8a9"}],
-    "friendRequests":[]
-    }
-]
-}
- */
+            if (result.length() == 0) {
+                loginMessage.setTextColor(getResources().getColor(R.color.red));
+                loginMessage.setText("User not found");
+                return;
+            }
             GsonBuilder builder = new GsonBuilder();
             builder.setPrettyPrinting().serializeNulls();
             Gson gson = builder.create();
 
-            Authorised authUser = gson.fromJson(result, Authorised.class);
-            AuthResult authRes = authUser.result.get(0);
+            AuthHelper.Authorised authUser = gson.fromJson(result, AuthHelper.Authorised.class);
+            AuthHelper.AuthResult authRes = authUser.result.get(0);
             String login = authRes.login;
             String email = authRes.email;
             String token = authRes.token;
@@ -195,42 +110,20 @@ public class LoginActivity extends ActionBarActivity {
 
 
     public void appLogin (View view) {
-        ch.setLogin(loginField.getText().toString().trim());
-        ch.setPassword(passwordField.getText().toString().trim());
-        if (! ch.isValid()) {
-            loginMessage.setTextColor(getResources().getColor(R.color.red));
-            loginMessage.setText("Name required!");
+        ah.setLogin(loginField.getText().toString().trim());
+        ah.setPassword(passwordField.getText().toString().trim());
+        if (! ah.isValid()) {
+            ArrayList<String> errors = ah.validError();
+            for (int i = 0; i < errors.size(); i++) {
+                if (errors.get(i) == "login") {
+                    loginField.setError("Login is required");
+                }
+                if (errors.get(i) == "password") {
+                    passwordField.setError("Password is required");
+                }
+            }
             return;
         }
         new HttpAsyncTask().execute("http://192.168.0.45:3000/jsonrpc");
-
-
-
-
-
-
-//        it is alert
-//        Toast.makeText(getBaseContext(), "Enter some data!", Toast.LENGTH_LONG).show();
-//        new HttpAsyncTask().execute("http://192.168.0.45:3000/jsonrpc");
-
-
-
-
-
-
     }
-
-
-//    public void appLogin(View view) {
-//        String getLogin = loginField.getText().toString();
-//        String getPassword= passwordField.getText().toString();
-//
-//        if (isNetworkConnected() && (getLogin.length() > 0) && (getPassword.length() > 0)) {
-//            Toast.makeText(getBaseContext(), "Enter some data!", Toast.LENGTH_LONG).show();
-//            new HttpAsyncTask().execute("http://192.168.0.45:3000/jsonrpc");
-//        } else {
-//            loginMessage.setTextColor(getResources().getColor(R.color.red));
-//            loginMessage.setText("Name required!");
-//        }
-//    }
 }
