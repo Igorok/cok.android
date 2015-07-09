@@ -16,6 +16,11 @@ import android.widget.TextView;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 
@@ -67,23 +72,35 @@ public class LoginActivity extends ActionBarActivity {
     }
 
 
-    private class HttpAsyncTask extends AsyncTask<String, Void, String> {
+    private class HttpAsyncTask extends AsyncTask<Void, Void, String> {
         @Override
-        protected String doInBackground(String... urls) {
+        protected String doInBackground(Void... params) {
             try {
-                return cm.POST(urls[0], ah.getJson());
+                String postRes = cm.POST("http://192.168.0.45:3000/jsonrpc", ah.getJson());
+                Log.d("post ", "" + postRes);
+                return postRes;
             } catch (Exception e) {
-                Log.e("Error ", "" + e.getMessage());
+                loginMessage.setTextColor(getResources().getColor(R.color.red));
+                loginMessage.setText(e.getMessage());
             }
             return null;
         }
         @Override
         protected void onPostExecute(String result) {
-            if (result.length() == 0) {
+            try {
+                JSONObject postRes = new JSONObject(result);
+                if (postRes.has("error")) {
+                    loginMessage.setTextColor(getResources().getColor(R.color.red));
+                    loginMessage.setText(postRes.getString("error"));
+                    return;
+                }
+            } catch (JSONException e) {
+                Log.e("JSONException ", "" + e.getMessage());
                 loginMessage.setTextColor(getResources().getColor(R.color.red));
-                loginMessage.setText("User not found");
+                loginMessage.setText(e.getMessage());
                 return;
             }
+
             GsonBuilder builder = new GsonBuilder();
             builder.setPrettyPrinting().serializeNulls();
             Gson gson = builder.create();
@@ -124,6 +141,6 @@ public class LoginActivity extends ActionBarActivity {
             }
             return;
         }
-        new HttpAsyncTask().execute("http://192.168.0.45:3000/jsonrpc");
+        new HttpAsyncTask().execute();
     }
 }
