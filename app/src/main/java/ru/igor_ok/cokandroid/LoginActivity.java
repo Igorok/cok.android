@@ -1,5 +1,6 @@
 package ru.igor_ok.cokandroid;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -12,6 +13,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 
 import com.google.gson.Gson;
@@ -23,6 +25,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 
 public class LoginActivity extends ActionBarActivity {
@@ -31,6 +34,7 @@ public class LoginActivity extends ActionBarActivity {
     protected Button loginBtn;
     protected TextView loginMessage;
     protected Intent intent;
+    protected Object result = null;
     CokModel cm;
     AuthHelper ah;
     @Override
@@ -72,59 +76,6 @@ public class LoginActivity extends ActionBarActivity {
     }
 
 
-    private class HttpAsyncTask extends AsyncTask<Void, Void, String> {
-        @Override
-        protected String doInBackground(Void... params) {
-            try {
-                String postRes = cm.POST("http://192.168.0.45:3000/jsonrpc", ah.getJson());
-                Log.d("post ", "" + postRes);
-                return postRes;
-            } catch (Exception e) {
-                loginMessage.setTextColor(getResources().getColor(R.color.red));
-                loginMessage.setText(e.getMessage());
-            }
-            return null;
-        }
-        @Override
-        protected void onPostExecute(String result) {
-            try {
-                JSONObject postRes = new JSONObject(result);
-                if (postRes.has("error")) {
-                    loginMessage.setTextColor(getResources().getColor(R.color.red));
-                    loginMessage.setText(postRes.getString("error"));
-                    return;
-                }
-            } catch (JSONException e) {
-                Log.e("JSONException ", "" + e.getMessage());
-                loginMessage.setTextColor(getResources().getColor(R.color.red));
-                loginMessage.setText(e.getMessage());
-                return;
-            }
-
-            GsonBuilder builder = new GsonBuilder();
-            builder.setPrettyPrinting().serializeNulls();
-            Gson gson = builder.create();
-
-            AuthHelper.Authorised authUser = gson.fromJson(result, AuthHelper.Authorised.class);
-            AuthHelper.AuthResult authRes = authUser.result.get(0);
-            String login = authRes.login;
-            String email = authRes.email;
-            String token = authRes.token;
-            String _id = authRes._id;
-
-            SharedPreferences user = getSharedPreferences("user", 0);
-            SharedPreferences.Editor editor = user.edit();
-            editor.putString("login", login);
-            editor.putString("email", email);
-            editor.putString("token", token);
-            editor.putString("_id", _id);
-            editor.commit();
-
-            Intent i = new Intent(getApplicationContext(), MainActivity.class);
-            startActivity(i);
-        }
-    }
-
 
     public void appLogin (View view) {
         ah.setLogin(loginField.getText().toString().trim());
@@ -141,6 +92,58 @@ public class LoginActivity extends ActionBarActivity {
             }
             return;
         }
-        new HttpAsyncTask().execute();
+
+        new AsyncTask<Void, Void, Object> (){
+            @Override
+            protected Object doInBackground (Void... params) {
+                try {
+                    String postRes = cm.POST("http://192.168.0.45:3000/jsonrpc", ah.getJson());
+                    JSONObject pR = new JSONObject(postRes);
+                    return pR;
+                } catch (Exception e) {
+                    return e;
+                }
+            }
+            @Override
+            protected void onPostExecute(Object result) {
+                if (result != null)
+                {
+                    if (result instanceof Exception) {
+                        Context context = getApplicationContext();
+                        CharSequence text = ((Exception) result).getMessage();
+                        int duration = Toast.LENGTH_SHORT;
+
+                        Toast toast = Toast.makeText(context, text, duration);
+                        toast.show();
+                    }
+                    else {
+                        GsonBuilder builder = new GsonBuilder();
+                        builder.setPrettyPrinting().serializeNulls();
+                        Gson gson = builder.create();
+
+                        AuthHelper.Authorised authUser = gson.fromJson(result.toString(), AuthHelper.Authorised.class);
+                        AuthHelper.AuthResult authRes = authUser.result.get(0);
+                        String login = authRes.login;
+                        String email = authRes.email;
+                        String token = authRes.token;
+                        String _id = authRes._id;
+
+                        SharedPreferences user = getSharedPreferences("user", 0);
+                        SharedPreferences.Editor editor = user.edit();
+                        editor.putString("login", login);
+                        editor.putString("email", email);
+                        editor.putString("token", token);
+                        editor.putString("_id", _id);
+                        editor.commit();
+
+                        Intent i = new Intent(getApplicationContext(), MainActivity.class);
+                        startActivity(i);
+                    }
+
+                }
+            }
+        }.execute();
+
+
     }
 }

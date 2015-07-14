@@ -76,7 +76,7 @@ public class CokModel {
     protected String POST(String url, String jsonData) throws Exception {
         Exception ex = null;
         if (! this.isNetworkConnected()) {
-            ex = new Exception("Connection is absent!");
+            ex = new Exception("internet connection not found");
         }
 
         InputStream inputStream = null;
@@ -101,6 +101,16 @@ public class CokModel {
         }
         if (ex != null) {
             throw ex;
+        }
+        try {
+            JSONObject postRes = new JSONObject(result);
+            if (postRes.has("error")) {
+                Log.e("Http Post ", "" + postRes.getString("error"));
+                throw new Exception("web error");
+            }
+        } catch (JSONException e) {
+            Log.e("JSONException ", "" + e.getMessage());
+            throw e;
         }
         Log.d("answer", result.trim());
         return result.toString().trim();

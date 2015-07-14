@@ -80,4 +80,6 @@ public class AuthHelper {
         public Integer id;
         public List<AuthResult> result = new ArrayList<AuthResult>();
     }
+
+    public Object aRes;
 }
