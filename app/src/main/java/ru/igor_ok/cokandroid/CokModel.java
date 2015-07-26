@@ -11,6 +11,8 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
+
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -22,23 +24,6 @@ import java.io.InputStreamReader;
 
 
 import android.util.Log;
-import android.widget.Toast;
-
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.AbstractMap;
-import java.util.Map;
 
 
 
@@ -50,6 +35,27 @@ public class CokModel {
     Context mContext;
     public CokModel(Context mContext) {
         this.mContext = mContext;
+    }
+
+
+
+
+    protected JSONObject getJsObj (String _method, JSONArray _params) throws Exception {
+        JSONObject jsObj = new JSONObject();
+        Exception ex = null;
+        try {
+            jsObj.accumulate("id", 1);
+            jsObj.accumulate("jsonrpc", "2.0");
+            jsObj.accumulate("method", _method);
+            jsObj.put("params", _params);
+        } catch (JSONException e) {
+            Log.e("JSONException ", "" + e.getMessage());
+            ex = e;
+        }
+        if (ex != null) {
+            throw ex;
+        }
+        return jsObj;
     }
 
 

@@ -1,44 +1,51 @@
 package ru.igor_ok.cokandroid;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+import org.json.JSONObject;
+
+import java.util.ArrayList;
 
 public class MainActivity extends ActionBarActivity {
     protected Intent intent;
-    protected TextView hello_world;
+    protected TextView user_name;
+    protected TextView user_email;
+    protected CokModel cm;
+
+    String login;
+    String email;
+
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        cm = new CokModel(this); //Here the context is passing
         SharedPreferences user = getSharedPreferences("user", 0);
-        String login = user.getString("login", "");
-        String email = user.getString("email", "");
-        String token = user.getString("token", "");
-        String _id = user.getString("_id", "");
+        login = user.getString("login", "");
+        email = user.getString("email", "");
 
-
-
-
-        Bundle extras = getIntent().getExtras();
-        String json = "";
-        if (extras != null) {
-            json = extras.getString("json");
-        }
-
-
-
-        hello_world = (TextView) findViewById(R.id.hello_world);
-        hello_world.setTextSize(40);
-        hello_world.setText(String.format(
-                "Main activity login %s, email %s, token %s, _id %s", login, email, token, _id
-        ));
+        user_name = (TextView) findViewById(R.id.user_name);
+        user_email = (TextView) findViewById(R.id.user_email);
+        user_name.setText(login);
+        user_email.setText(email);
     }
 
     @Override
@@ -61,5 +68,16 @@ public class MainActivity extends ActionBarActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+
+
+    public void appShowUsers (View view) {
+        String login1 = login;
+        String email1 = email;
+
+
+        Intent i = new Intent(getApplicationContext(), UserListActivity.class);
+        startActivity(i);
     }
 }

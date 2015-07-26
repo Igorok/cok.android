@@ -1,12 +1,11 @@
 package ru.igor_ok.cokandroid;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -18,25 +17,17 @@ import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-
-import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.util.ArrayList;
-import java.util.HashMap;
 
 
-public class LoginActivity extends ActionBarActivity {
+public class LoginActivity extends Activity {
     protected EditText loginField;
     protected EditText passwordField;
     protected Button loginBtn;
     protected TextView loginMessage;
-    protected Intent intent;
-    protected Object result = null;
-    CokModel cm;
-    AuthHelper ah;
+    protected CokModel cm;
+    protected AuthHelper ah;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -49,7 +40,6 @@ public class LoginActivity extends ActionBarActivity {
         passwordField = (EditText) findViewById(R.id.password_field);
         loginBtn = (Button) findViewById(R.id.login_btn);
         loginMessage = (TextView) findViewById(R.id.login_message);
-        intent = new Intent(this, MainActivity.class);
     }
 
 
@@ -112,9 +102,11 @@ public class LoginActivity extends ActionBarActivity {
                         Context context = getApplicationContext();
                         CharSequence text = ((Exception) result).getMessage();
                         int duration = Toast.LENGTH_SHORT;
-
                         Toast toast = Toast.makeText(context, text, duration);
                         toast.show();
+
+//                        loginMessage.setTextColor(getResources().getColor(R.color.red));
+//                        loginMessage.setText(((Exception) result).getMessage());
                     }
                     else {
                         GsonBuilder builder = new GsonBuilder();

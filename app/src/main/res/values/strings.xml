@@ -8,5 +8,6 @@
     <string name="login_message">Please enter your login and password</string>
     <string name="login">Login</string>
     <string name="password">Password</string>
+    <string name="title_activity_user_list">UserListActivity</string>
 
 </resources>
