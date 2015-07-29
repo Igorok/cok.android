@@ -3,7 +3,6 @@ package ru.igor_ok.cokandroid;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -24,11 +23,11 @@ import com.google.gson.GsonBuilder;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.util.Map;
+
 
 public class UserListActivity extends Activity {
     protected CokModel cm;
-    protected String token;
-    protected String _id;
     protected MemoListAdapter adapter;
 
     @Override
@@ -37,9 +36,6 @@ public class UserListActivity extends Activity {
         setContentView(R.layout.activity_user_list);
 
         cm = new CokModel(this);
-        SharedPreferences user = getSharedPreferences("user", 0);
-        token = user.getString("token", "");
-        _id = user.getString("_id", "");
 
         // the adapter is a member field in the activity
         adapter = new MemoListAdapter(this, R.layout.user_item);
@@ -115,18 +111,55 @@ public class UserListActivity extends Activity {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     protected class GetUsers extends AsyncTask<Void, Void, Object> {
         @Override
         protected Object doInBackground (Void... params) {
             try {
                 JSONObject uParam = new JSONObject();
-                uParam.put("uId", _id);
-                uParam.put("token", token);
+                Map<String, String> usr = cm.getUser();
+
+                uParam.put("uId", usr.get("_id"));
+                uParam.put("token", usr.get("token"));
                 JSONArray uArr = new JSONArray();
                 uArr.put(uParam);
                 JSONObject jsObj = cm.getJsObj("user.getUserList", uArr);
 
-                String postRes = cm.POST("http://192.168.0.45:3000/jsonrpc", jsObj.toString());
+                String postRes = cm.POST(jsObj.toString());
                 JSONObject pR = new JSONObject(postRes);
                 JSONArray rA = pR.getJSONArray("result");
                 JSONArray uA = rA.getJSONArray(0);
@@ -158,18 +191,15 @@ public class UserListActivity extends Activity {
                 Gson gson = builder.create();
 
                 UserModel.UserList uRes = gson.fromJson(result.toString(), UserModel.UserList.class);
-
-                UserModel.UserList mU = uRes;
-
-
-
                 adapter.addAll(uRes.users);
-
-//                setContentView(R.layout.activity_user_list);
                 ListView lv = (ListView) findViewById(R.id.userListView);
                 lv.setAdapter(adapter);
             }
         }
     }
+
+
+
+
 
 }

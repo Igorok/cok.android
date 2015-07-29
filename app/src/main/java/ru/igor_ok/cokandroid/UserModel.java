@@ -14,6 +14,7 @@ public class UserModel {
         public String _id;
         public String login;
         public String email;
+        public Boolean friend;
     }
 
     public class UserList {

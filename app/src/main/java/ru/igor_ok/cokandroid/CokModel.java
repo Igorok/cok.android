@@ -1,6 +1,8 @@
 package ru.igor_ok.cokandroid;
 
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -21,24 +23,43 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 
+import android.support.annotation.NonNull;
 import android.util.Log;
+import android.widget.Toast;
 
-
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 
 /**
  * Created by igor on 04.07.15.
  */
 public class CokModel {
-    Context mContext;
+    private Context mContext;
+    private Map<String, String> user = new HashMap<>();
+    private String restUrl = "http://192.168.0.45:3000/jsonrpc";
+
     public CokModel(Context mContext) {
         this.mContext = mContext;
+        SharedPreferences userStorage;
+        userStorage = mContext.getSharedPreferences("user", 0);
+        user.put("token", userStorage.getString("token", ""));
+        user.put("_id", userStorage.getString("_id", ""));
+        user.put("login", userStorage.getString("login", ""));
+        user.put("email", userStorage.getString("email", ""));
     }
 
 
 
+    protected Map<String, String> getUser () {
+        return user;
+    }
 
     protected JSONObject getJsObj (String _method, JSONArray _params) throws Exception {
         JSONObject jsObj = new JSONObject();
@@ -79,7 +100,7 @@ public class CokModel {
         return result;
     }
 
-    protected String POST(String url, String jsonData) throws Exception {
+    protected String POST(String jsonData) throws Exception {
         Exception ex = null;
         if (! this.isNetworkConnected()) {
             ex = new Exception("internet connection not found");
@@ -88,7 +109,7 @@ public class CokModel {
         InputStream inputStream = null;
         String result = "";
         HttpClient httpclient = new DefaultHttpClient();
-        HttpPost httppost = new HttpPost(url);
+        HttpPost httppost = new HttpPost(restUrl);
         try {
             StringEntity se = new StringEntity(jsonData.toString());
             httppost.setEntity(se);
@@ -121,4 +142,8 @@ public class CokModel {
         Log.d("answer", result.trim());
         return result.toString().trim();
     }
+
+
+
+
 }

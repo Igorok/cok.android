@@ -21,6 +21,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 
 
+
 public class LoginActivity extends Activity {
     protected EditText loginField;
     protected EditText passwordField;
@@ -28,6 +29,10 @@ public class LoginActivity extends Activity {
     protected TextView loginMessage;
     protected CokModel cm;
     protected AuthHelper ah;
+    protected Context context;
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -40,6 +45,7 @@ public class LoginActivity extends Activity {
         passwordField = (EditText) findViewById(R.id.password_field);
         loginBtn = (Button) findViewById(R.id.login_btn);
         loginMessage = (TextView) findViewById(R.id.login_message);
+        context = getApplicationContext();
     }
 
 
@@ -66,7 +72,6 @@ public class LoginActivity extends Activity {
     }
 
 
-
     public void appLogin (View view) {
         ah.setLogin(loginField.getText().toString().trim());
         ah.setPassword(passwordField.getText().toString().trim());
@@ -87,7 +92,7 @@ public class LoginActivity extends Activity {
             @Override
             protected Object doInBackground (Void... params) {
                 try {
-                    String postRes = cm.POST("http://192.168.0.45:3000/jsonrpc", ah.getJson());
+                    String postRes = cm.POST(ah.getJson());
                     JSONObject pR = new JSONObject(postRes);
                     return pR;
                 } catch (Exception e) {
@@ -104,9 +109,6 @@ public class LoginActivity extends Activity {
                         int duration = Toast.LENGTH_SHORT;
                         Toast toast = Toast.makeText(context, text, duration);
                         toast.show();
-
-//                        loginMessage.setTextColor(getResources().getColor(R.color.red));
-//                        loginMessage.setText(((Exception) result).getMessage());
                     }
                     else {
                         GsonBuilder builder = new GsonBuilder();
