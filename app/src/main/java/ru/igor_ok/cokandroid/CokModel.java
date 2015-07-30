@@ -43,7 +43,7 @@ import com.google.gson.GsonBuilder;
 public class CokModel {
     private Context mContext;
     private Map<String, String> user = new HashMap<>();
-    private String restUrl = "http://192.168.0.45:3000/jsonrpc";
+    private String restUrl = "http://igor-ok.herokuapp.com/jsonrpc";
 
     public CokModel(Context mContext) {
         this.mContext = mContext;

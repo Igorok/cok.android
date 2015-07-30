@@ -12,6 +12,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -83,7 +84,7 @@ public class UserListActivity extends Activity {
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             try {
-                UserModel.UserItem item = getItem(position);
+                final UserModel.UserItem item = getItem(position);
                 View v = null;
                 if (convertView == null) {
                     LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -100,6 +101,20 @@ public class UserListActivity extends Activity {
                 header.setText(item.login);
                 description.setText(item.email);
 
+                v.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View cView) {
+                        Context context = getApplicationContext();
+                        CharSequence text = item._id + " - " + item.login;
+                        int duration = Toast.LENGTH_SHORT;
+                        Toast toast = Toast.makeText(context, text, duration);
+                        toast.show();
+                    }
+                });
+
+
+
+
                 return v;
             } catch (Exception ex) {
                 Log.e("adapter exception ", "" + ex.getMessage());
@@ -107,41 +122,6 @@ public class UserListActivity extends Activity {
             }
         }
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -193,6 +173,9 @@ public class UserListActivity extends Activity {
                 UserModel.UserList uRes = gson.fromJson(result.toString(), UserModel.UserList.class);
                 adapter.addAll(uRes.users);
                 ListView lv = (ListView) findViewById(R.id.userListView);
+
+
+
                 lv.setAdapter(adapter);
             }
         }
