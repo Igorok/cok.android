@@ -27,7 +27,7 @@ import org.json.JSONObject;
 import java.util.Map;
 
 
-public class UserListActivity extends Activity {
+public class UserListActivity extends ActionBarActivity {
     protected CokModel cm;
     protected MemoListAdapter adapter;
 
@@ -88,9 +88,7 @@ public class UserListActivity extends Activity {
                 View v = null;
                 if (convertView == null) {
                     LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-
                     v = inflater.inflate(layoutResourceId, null);
-
                 } else {
                     v = convertView;
                 }
@@ -104,11 +102,9 @@ public class UserListActivity extends Activity {
                 v.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View cView) {
-                        Context context = getApplicationContext();
-                        CharSequence text = item._id + " - " + item.login;
-                        int duration = Toast.LENGTH_SHORT;
-                        Toast toast = Toast.makeText(context, text, duration);
-                        toast.show();
+                    Intent intent = new Intent(getApplicationContext(), UserDetailActivity.class);
+                    intent.putExtra("userId", item._id);
+                    startActivity(intent);
                     }
                 });
 
@@ -173,9 +169,6 @@ public class UserListActivity extends Activity {
                 UserModel.UserList uRes = gson.fromJson(result.toString(), UserModel.UserList.class);
                 adapter.addAll(uRes.users);
                 ListView lv = (ListView) findViewById(R.id.userListView);
-
-
-
                 lv.setAdapter(adapter);
             }
         }

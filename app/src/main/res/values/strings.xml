@@ -8,7 +8,19 @@
     <string name="login_message">Please enter your login and password</string>
     <string name="login">Login</string>
     <string name="password">Password</string>
-    <string name="title_activity_user_list">UserListActivity</string>
-    <string name="title_activity_user_detail">UserDetailActivity</string>
+    <string name="title_activity_main">Profile</string>
+    <string name="title_activity_user_list">Users</string>
+    <string name="title_activity_user_detail">User</string>
+    <string name="title_activity_personal_chat">Chat</string>
+    <string name="title_activity_group_chat">Chat room</string>
+
+    <string name="send_message">Send a message</string>
+
+
+
+    <string name="jsonrpc">http://192.168.0.45:3000/jsonrpc</string>
+    <string name="socketio">http://192.168.0.45:3000</string>
+    <!--<string name="jsonrpc">http://igor-ok.herokuapp.com/jsonrpc</string>-->
+    <!--<string name="socketio">http://igor-ok.herokuapp.com</string>-->
 
 </resources>

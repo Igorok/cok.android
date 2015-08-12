@@ -13,4 +13,10 @@
         <item name="android:gravity">center</item>
     </style>
 
+    <style name="btn_default" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="android:textColor">#fff</item>
+        <item name="android:background">#666</item>
+        <item name="android:layout_marginBottom">10dp</item>
+    </style>
+
 </resources>
