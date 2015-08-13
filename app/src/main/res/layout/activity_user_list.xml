@@ -19,5 +19,4 @@
             android:layout_height="wrap_content">
         </ListView>
     </LinearLayout>
-
 </ScrollView>

@@ -19,4 +19,31 @@
         <item name="android:layout_marginBottom">10dp</item>
     </style>
 
+
+
+
+
+
+
+
+    <style name="btn_send" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="android:textColor">#fff</item>
+        <item name="android:background">#66333333</item>
+        <item name="android:src">@android:drawable/ic_menu_send</item>
+        <item name="android:layout_marginBottom">0dp</item>
+        <item name="android:layout_weight">0.2</item>
+        <item name="android:layout_height">50dp</item>
+        <item name="android:layout_width">0dp</item>
+    </style>
+    <style name="edit_send" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="android:textColor">#ffffff</item>
+        <item name="android:color">#fff</item>
+        <item name="android:background">#66333333</item>
+        <item name="android:layout_marginBottom">0dp</item>
+        <item name="android:paddingLeft">10dp</item>
+        <item name="android:layout_weight">1.8</item>
+        <item name="android:layout_height">50dp</item>
+        <item name="android:layout_width">0dp</item>
+    </style>
+
 </resources>

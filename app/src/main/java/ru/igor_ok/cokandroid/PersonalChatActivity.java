@@ -2,12 +2,15 @@ package ru.igor_ok.cokandroid;
 
 import android.app.ActionBar;
 import android.content.Context;
+import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -33,6 +36,7 @@ public class PersonalChatActivity extends ActionBarActivity {
     protected String personId = null;
     private String uId;
     private String token;
+    private String socketio;
 
     private String getPersId() {
         if (personId != null) {
@@ -75,19 +79,8 @@ public class PersonalChatActivity extends ActionBarActivity {
 
 
     private Socket mSocket;
-    {
-        try {
-            mSocket = IO.socket("http://192.168.0.45:3000");
-        } catch (Exception e) {
-            Exception ex = e;
-            Log.e("post exception ", "" + ex.getMessage());
-            Context context = getApplicationContext();
-            CharSequence text = ex.getMessage();
-            int duration = Toast.LENGTH_SHORT;
-            Toast toast = Toast.makeText(context, text, duration);
-            toast.show();
-        }
-    }
+
+
 
     private Emitter.Listener joinPersonal = new Emitter.Listener() {
         @Override
@@ -112,6 +105,15 @@ public class PersonalChatActivity extends ActionBarActivity {
                     android.support.v7.app.ActionBar actionBar = PersonalChatActivity.this.getSupportActionBar();
                     actionBar.setTitle(uLogins);
 
+                    ArrayList<MsgItem> arrMsg = cr.history;
+
+
+                    MsgListAdapter msgAdp = new MsgListAdapter(PersonalChatActivity.this, R.layout.chat_msg_item);
+                    msgAdp.addAll(cr.history);
+
+                    ListView lv = (ListView) findViewById(R.id.msgListView);
+                    lv.setAdapter(msgAdp);
+
                 } catch (Exception e) {
                     Exception ex = e;
                     Log.e("post exception ", "" + ex.getMessage());
@@ -132,16 +134,64 @@ public class PersonalChatActivity extends ActionBarActivity {
         }
     };
 
+    public class MsgListAdapter extends ArrayAdapter<MsgItem> {
+        private int layoutResourceId;
+        private static final String LOG_TAG = "MsgListAdapter";
+
+        public MsgListAdapter(Context context, int textViewResourceId) {
+            super(context, textViewResourceId);
+            layoutResourceId = textViewResourceId;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            try {
+                final MsgItem item = getItem(position);
+                View v = null;
+                if (convertView == null) {
+                    LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                    v = inflater.inflate(layoutResourceId, null);
+                } else {
+                    v = convertView;
+                }
+
+                TextView msgLogin = (TextView) v.findViewById(R.id.msgLogin);
+                TextView msgDate = (TextView) v.findViewById(R.id.msgDate);
+                TextView msgText = (TextView) v.findViewById(R.id.msgText);
+
+                msgLogin.setText(item.login);
+                msgDate.setText(item.date);
+                msgText.setText(item.msg);
+
+                return v;
+            } catch (Exception ex) {
+                Log.e("adapter exception ", "" + ex.getMessage());
+                return null;
+            }
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         getWindow().requestFeature(Window.FEATURE_ACTION_BAR);
 
         super.onCreate(savedInstanceState);
-
-
-
         setContentView(R.layout.activity_personal_chat);
+
+        socketio = this.getString(R.string.socketio);
+        {
+            try {
+                mSocket = IO.socket(socketio);
+            } catch (Exception e) {
+                Exception ex = e;
+                Log.e("post exception ", "" + ex.getMessage());
+                Context context = getApplicationContext();
+                CharSequence text = ex.getMessage();
+                int duration = Toast.LENGTH_SHORT;
+                Toast toast = Toast.makeText(context, text, duration);
+                toast.show();
+            }
+        }
 
         cm = new CokModel(this);
         Map<String, String> usr = cm.getUser();
@@ -150,10 +200,7 @@ public class PersonalChatActivity extends ActionBarActivity {
 
 //        mSocket.on("message", getMessage);
         mSocket.on("joinPersonal", joinPersonal);
-
         mSocket.connect();
-
-
 
         JSONObject jData = new JSONObject();
         try {

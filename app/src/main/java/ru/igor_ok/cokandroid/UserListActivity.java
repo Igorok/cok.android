@@ -70,16 +70,13 @@ public class UserListActivity extends ActionBarActivity {
     }
 
     public class MemoListAdapter extends ArrayAdapter<UserModel.UserItem> {
-
         private int layoutResourceId;
-
         private static final String LOG_TAG = "MemoListAdapter";
 
         public MemoListAdapter(Context context, int textViewResourceId) {
             super(context, textViewResourceId);
             layoutResourceId = textViewResourceId;
         }
-
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
