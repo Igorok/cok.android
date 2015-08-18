@@ -1,5 +1,6 @@
 package ru.igor_ok.cokandroid;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -44,7 +45,13 @@ public class LoginActivity extends Activity {
         loginField = (EditText) findViewById(R.id.login_field);
         passwordField = (EditText) findViewById(R.id.password_field);
         loginBtn = (Button) findViewById(R.id.login_btn);
-        loginMessage = (TextView) findViewById(R.id.login_message);
+
+        loginBtn.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                appLogin(v);
+            }
+        });
+
         context = getApplicationContext();
     }
 

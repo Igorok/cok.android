@@ -7,6 +7,7 @@
     <string name="title_activity_login">LoginActivity</string>
     <string name="login_message">Please enter your login and password</string>
     <string name="login">Login</string>
+    <string name="login_btn">Login in</string>
     <string name="password">Password</string>
     <string name="title_activity_main">Profile</string>
     <string name="title_activity_user_list">Users</string>

@@ -25,7 +25,10 @@
             <ListView
                 android:id="@+id/msgListView"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:transcriptMode="alwaysScroll"
+                android:stackFromBottom="true"
+            >
             </ListView>
         </LinearLayout>
     </ScrollView>
@@ -36,20 +39,17 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:orientation="horizontal"
-        android:layout_marginBottom="5dp"
-        android:layout_marginLeft="5dp"
-        android:layout_marginRight="5dp"
         >
 
         <EditText
-            android:id="@+id/edit_text"
+            android:id="@+id/send_text"
             android:hint="Type your message"
             style="@style/edit_send"
         >
         </EditText>
 
         <ImageButton
-            android:id="@+id/button"
+            android:id="@+id/send_button"
             android:title="Send"
             style="@style/btn_send"
         >

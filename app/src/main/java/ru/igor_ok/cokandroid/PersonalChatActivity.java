@@ -3,6 +3,7 @@ package ru.igor_ok.cokandroid;
 import android.app.ActionBar;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -13,6 +14,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -27,16 +31,24 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+
+import static ru.igor_ok.cokandroid.ChatModel.*;
 
 
 public class PersonalChatActivity extends ActionBarActivity {
     protected CokModel cm;
     protected String personId = null;
     private String uId;
+    private String uLogin;
     private String token;
     private String socketio;
+
+    private ImageButton sendBtn;
+    private EditText sendText;
+
 
     private String getPersId() {
         if (personId != null) {
@@ -56,120 +68,14 @@ public class PersonalChatActivity extends ActionBarActivity {
         return personId;
     }
 
-
-    private class MsgItem {
-        public String date;
-        public String login;
-        public String msg;
-        public String uId;
-    }
-
-    private class UsrItem {
-        public String _id;
-        public String login;
-        public String status;
-    }
-
-    private class CRoom {
-        public String _id;
-        public ArrayList<MsgItem> history = new ArrayList<MsgItem>();
-        public Map<String, UsrItem> users = new HashMap<>();
-    }
-
-
+    private String rId = null;
 
     private Socket mSocket;
+    private MsgListAdapter msgAdp;
 
 
 
-    private Emitter.Listener joinPersonal = new Emitter.Listener() {
-        @Override
-        public void call(final Object... args) {
-        try {
-            PersonalChatActivity.this.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                try {
-                    JSONObject argObj = (JSONObject) args[0];
-                    GsonBuilder builder = new GsonBuilder();
-                    builder.setPrettyPrinting().serializeNulls();
-                    Gson gson = builder.create();
 
-                    CRoom cr = gson.fromJson(argObj.toString(), CRoom.class);
-                    String uLogins = "";
-                    for (HashMap.Entry<String, UsrItem> entry : cr.users.entrySet()) {
-                        UsrItem myStr = entry.getValue();
-                        uLogins += myStr.login + " ";
-                    }
-
-                    android.support.v7.app.ActionBar actionBar = PersonalChatActivity.this.getSupportActionBar();
-                    actionBar.setTitle(uLogins);
-
-                    ArrayList<MsgItem> arrMsg = cr.history;
-
-
-                    MsgListAdapter msgAdp = new MsgListAdapter(PersonalChatActivity.this, R.layout.chat_msg_item);
-                    msgAdp.addAll(cr.history);
-
-                    ListView lv = (ListView) findViewById(R.id.msgListView);
-                    lv.setAdapter(msgAdp);
-
-                } catch (Exception e) {
-                    Exception ex = e;
-                    Log.e("post exception ", "" + ex.getMessage());
-                    Context context = getApplicationContext();
-                    CharSequence text = ex.getMessage();
-                    int duration = Toast.LENGTH_SHORT;
-                    Toast toast = Toast.makeText(context, text, duration);
-                    toast.show();
-                }
-                }
-            });
-
-        } catch (Exception e) {
-            Exception ex = e;
-            Log.e("Error ", "" + ex.getMessage());
-        }
-
-        }
-    };
-
-    public class MsgListAdapter extends ArrayAdapter<MsgItem> {
-        private int layoutResourceId;
-        private static final String LOG_TAG = "MsgListAdapter";
-
-        public MsgListAdapter(Context context, int textViewResourceId) {
-            super(context, textViewResourceId);
-            layoutResourceId = textViewResourceId;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            try {
-                final MsgItem item = getItem(position);
-                View v = null;
-                if (convertView == null) {
-                    LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                    v = inflater.inflate(layoutResourceId, null);
-                } else {
-                    v = convertView;
-                }
-
-                TextView msgLogin = (TextView) v.findViewById(R.id.msgLogin);
-                TextView msgDate = (TextView) v.findViewById(R.id.msgDate);
-                TextView msgText = (TextView) v.findViewById(R.id.msgText);
-
-                msgLogin.setText(item.login);
-                msgDate.setText(item.date);
-                msgText.setText(item.msg);
-
-                return v;
-            } catch (Exception ex) {
-                Log.e("adapter exception ", "" + ex.getMessage());
-                return null;
-            }
-        }
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -177,6 +83,20 @@ public class PersonalChatActivity extends ActionBarActivity {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_personal_chat);
+        sendBtn = (ImageButton) findViewById(R.id.send_button);
+        sendBtn.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                try {
+                    sendMessage(v);
+                } catch (Exception e) {
+                    Exception ex = e;
+                    cm.errToast(ex);
+                }
+            }
+        });
+
+        sendText = (EditText) findViewById(R.id.send_text);
+
 
         socketio = this.getString(R.string.socketio);
         {
@@ -197,9 +117,10 @@ public class PersonalChatActivity extends ActionBarActivity {
         Map<String, String> usr = cm.getUser();
         token = usr.get("token");
         uId = usr.get("_id");
+        uLogin = usr.get("login");
 
-//        mSocket.on("message", getMessage);
         mSocket.on("joinPersonal", joinPersonal);
+        mSocket.on("message", getMessage);
         mSocket.connect();
 
         JSONObject jData = new JSONObject();
@@ -209,7 +130,7 @@ public class PersonalChatActivity extends ActionBarActivity {
             jData.put("personId", getPersId());
         } catch (JSONException e) {
             Exception ex = e;
-            Log.e("post exception ", "" + ex.getMessage());
+            cm.errToast(ex);
             return;
         }
         mSocket.emit("joinPersonal", jData);
@@ -218,11 +139,94 @@ public class PersonalChatActivity extends ActionBarActivity {
 
 
 
+    private Emitter.Listener joinPersonal = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            try {
+                PersonalChatActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            JSONObject argObj = (JSONObject) args[0];
+                            GsonBuilder builder = new GsonBuilder();
+                            builder.setPrettyPrinting().serializeNulls();
+                            Gson gson = builder.create();
+
+                            ChatModel.CRoom cr = gson.fromJson(argObj.toString(), ChatModel.CRoom.class);
+                            rId = cr._id;
+                            String uLogins = "";
+                            for (HashMap.Entry<String, ChatModel.UsrItem> entry : cr.users.entrySet()) {
+                                ChatModel.UsrItem myStr = entry.getValue();
+                                uLogins += myStr.login + " ";
+                            }
+
+                            android.support.v7.app.ActionBar actionBar = PersonalChatActivity.this.getSupportActionBar();
+                            actionBar.setTitle(uLogins);
 
 
-    public void sendMessage (View view) {
-//        mSocket.emit("new message", message);
+                            msgAdp = new MsgListAdapter(PersonalChatActivity.this, R.layout.chat_msg_item);
+                            msgAdp.addAll(cr.history);
+
+                            ListView lv = (ListView) findViewById(R.id.msgListView);
+                            lv.setAdapter(msgAdp);
+
+                        } catch (Exception e) {
+                            Exception ex = e;
+                            cm.errToast(ex);
+                        }
+                    }
+                });
+
+            } catch (Exception e) {
+                Exception ex = e;
+                cm.errToast(ex);
+            }
+
+        }
+    };
+
+    public void sendMessage (View view) throws JSONException {
+        String msgStr = sendText.getText().toString().trim();
+        JSONObject msgNew = new JSONObject();
+        msgNew.put("uId", uId);
+        msgNew.put("token", token);
+        msgNew.put("message", msgStr);
+        msgNew.put("rId", rId);
+
+        mSocket.emit("message", msgNew);
+        sendText.setText("");
     }
+
+    private Emitter.Listener getMessage = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            try {
+                PersonalChatActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            JSONObject argObj = (JSONObject) args[0];
+                            GsonBuilder builder = new GsonBuilder();
+                            builder.setPrettyPrinting().serializeNulls();
+                            Gson gson = builder.create();
+
+                            ChatModel.MsgItem msgItem = gson.fromJson(argObj.toString(), ChatModel.MsgItem.class);
+                            msgAdp.add(msgItem);
+                            msgAdp.notifyDataSetChanged();
+
+                        } catch (Exception e) {
+                            Exception ex = e;
+                            cm.errToast(ex);
+                        }
+                    }
+                });
+            } catch (Exception e) {
+                Exception ex = e;
+                cm.errToast(ex);
+            }
+
+        }
+    };
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

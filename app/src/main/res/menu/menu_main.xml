@@ -9,8 +9,8 @@
         android:id="@+id/a_More"
         android:icon="@drawable/abc_ic_menu_moreoverflow_mtrl_alpha"
         app:showAsAction="ifRoom"
-        android:title="More">
-
+        android:title="More"
+        >
         <menu>
             <item android:id="@+id/show_users"
                 android:title="Show users"

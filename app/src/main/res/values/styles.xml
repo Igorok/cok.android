@@ -1,9 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
 
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
-        <!-- Customize your theme here. -->
+        <!-- API 14 theme customizations can go here. -->
+        <item name="android:actionBarStyle">@style/MyActionBar</item>
+        <item name="android:actionBarTabTextStyle">@style/MyTitleTextStyle</item>
+        <item name="android:actionMenuTextColor">#fff</item>
+        <item name="android:windowActionBarOverlay">false</item>
+        <item name="android:actionMenuTextAppearance">@style/MyTitleTextStyle</item>
+
+        <!-- Support library compatibility -->
+        <item name="actionBarStyle">@style/MyActionBar</item>
+        <item name="actionBarTabTextStyle">@style/MyTitleTextStyle</item>
+        <item name="actionMenuTextColor">#fff</item>
+        <item name="windowActionBarOverlay">false</item>
+        <item name="actionMenuTextAppearance">@style/MyTitleTextStyle</item>
     </style>
+
+    <style name="MyTitleTextStyle" parent="@style/TextAppearance.AppCompat.Widget.ActionBar.Title">
+        <item name="android:textColor">#ffffff</item>
+        <item name="android:textSize">21sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="MyActionBar" parent="@style/Widget.AppCompat.Light.ActionBar.Solid">
+        <item name="android:titleTextStyle">@style/MyTitleTextStyle</item>
+        <item name="android:backgroundSplit">@drawable/back_orange</item>
+        <item name="android:background">@drawable/back_orange</item>
+
+        <!-- Support library compatibility -->
+        <item name="titleTextStyle">@style/MyTitleTextStyle</item>
+        <item name="background">@drawable/back_orange</item>
+        <item name="backgroundSplit">@drawable/back_orange</item>
+    </style>
+
+
+
+
+
+
 
     <style name="login_message" parent="Theme.AppCompat.Light.DarkActionBar">
         <item name="android:layout_width">fill_parent</item>
@@ -19,6 +55,29 @@
         <item name="android:layout_marginBottom">10dp</item>
     </style>
 
+    <style name="btn_danger" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="android:textColor">#fff</item>
+        <item name="android:background">@drawable/back_orange</item>
+        <item name="android:layout_marginBottom">10dp</item>
+    </style>
+
+    <style name="btn_login" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="android:textColor">#fff</item>
+        <item name="android:background">@drawable/back_orange</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+
+    <style name="edit_text_gray" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="android:textColor">#fff</item>
+        <item name="android:background">@drawable/back_edit_text</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:minHeight">40dp</item>
+        <item name="android:paddingLeft">15dp</item>
+        <item name="android:paddingRight">15dp</item>
+        <item name="android:layout_marginBottom">15dp</item>
+    </style>
 
 
 

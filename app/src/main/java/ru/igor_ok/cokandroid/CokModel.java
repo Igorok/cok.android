@@ -57,6 +57,15 @@ public class CokModel {
         restUrl = mContext.getString(R.string.jsonrpc);
     }
 
+    public void errToast (Exception e) {
+        Exception ex = e;
+        Log.e("get message ", "" + ex.getMessage());
+        Context context = this.mContext.getApplicationContext();
+        CharSequence text = ex.getMessage();
+        int duration = Toast.LENGTH_SHORT;
+        Toast toast = Toast.makeText(context, text, duration);
+        toast.show();
+    }
 
 
     protected Map<String, String> getUser () {
