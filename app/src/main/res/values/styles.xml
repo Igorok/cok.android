@@ -105,4 +105,12 @@
         <item name="android:layout_width">0dp</item>
     </style>
 
+
+    <style name="nav_title" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="android:textColor">#fff</item>
+        <item name="android:layout_marginBottom">10dp</item>
+        <item name="android:layout_marginTop">10dp</item>
+        <item name="android:textSize">21sp</item>
+    </style>
+
 </resources>

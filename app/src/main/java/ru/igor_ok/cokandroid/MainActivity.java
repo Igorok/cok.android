@@ -1,20 +1,70 @@
 package ru.igor_ok.cokandroid;
 
+
+import android.net.Uri;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+
+
 import android.content.Intent;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.Map;
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends ActionBarActivity
+        implements FragmentMain.OnFragmentInteractionListener {
     protected TextView user_name;
     protected TextView user_email;
     protected CokModel cm;
+
+
+    private String[] navTitles;
+    private DrawerLayout navLayout;
+    private ListView navList;
+    private ArrayAdapter<String> strAdapter;
+    private Map<String, String> usr;
+
+
+    private void fragmentInit (int position) {
+        Toast.makeText(getBaseContext(), "" + position, Toast.LENGTH_SHORT).show();
+        Fragment fragment = null;
+
+        switch (position) {
+            case 0:
+                fragment = FragmentMain.newInstance(usr.get("login"), usr.get("email"));
+                break;
+            case 1:
+                fragment = FragmentUserList.newInstance(usr.get("_id"), usr.get("token"));
+                break;
+            default:
+                break;
+        }
+
+        if (fragment != null) {
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            fragmentManager.beginTransaction()
+                    .replace(R.id.content_frame, fragment)
+                    .commit();
+        } else {
+            Log.e("Empty fragment ", " " + position);
+        }
+
+
+    }
+
 
 
     @Override
@@ -23,12 +73,31 @@ public class MainActivity extends ActionBarActivity {
         setContentView(R.layout.activity_main);
 
         cm = new CokModel(this);
-        Map<String, String> usr = cm.getUser();
+        usr = cm.getUser();
 
-        user_name = (TextView) findViewById(R.id.user_name);
-        user_email = (TextView) findViewById(R.id.user_email);
-        user_name.setText(usr.get("login"));
-        user_email.setText(usr.get("email"));
+        navTitles = new String[] {"Profile " + usr.get("login"), "Users", "Friends", "Chat rooms"};
+        navLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        navList = (ListView) findViewById(R.id.left_drawer);
+
+
+
+
+
+
+        strAdapter = new ArrayAdapter<String> (this, R.layout.drawer_nav_item);
+        strAdapter.addAll(navTitles);
+        navList.setAdapter(strAdapter);
+        navList.setClickable(true);
+        navList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                fragmentInit(position);
+            }
+        });
+
+
+
+        fragmentInit(0);
+
     }
 
     @Override
@@ -67,5 +136,15 @@ public class MainActivity extends ActionBarActivity {
     public void appShowUsers (View view) {
         Intent i = new Intent(getApplicationContext(), UserListActivity.class);
         startActivity(i);
+    }
+
+    @Override
+    public void onFragmentMainInteraction(Uri uri) {
+
+    }
+
+
+    public void onFragmentUserListInteraction(Uri uri) {
+
     }
 }

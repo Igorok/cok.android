@@ -21,6 +21,9 @@
 
     <string name="jsonrpc">http://192.168.0.45:3000/jsonrpc</string>
     <string name="socketio">http://192.168.0.45:3000</string>
+
+<!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
     <!--<string name="jsonrpc">http://igor-ok.herokuapp.com/jsonrpc</string>-->
     <!--<string name="socketio">http://igor-ok.herokuapp.com</string>-->
 
