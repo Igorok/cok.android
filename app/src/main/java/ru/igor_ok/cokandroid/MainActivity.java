@@ -20,12 +20,11 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import java.util.ArrayList;
 import java.util.Map;
 
 public class MainActivity extends ActionBarActivity
-        implements FragmentMain.OnFragmentInteractionListener {
+    implements FragmentMain.OnFragmentInteractionListener, FragmentUserList.OnUserListListener
+{
     protected TextView user_name;
     protected TextView user_email;
     protected CokModel cm;
@@ -48,16 +47,18 @@ public class MainActivity extends ActionBarActivity
                 break;
             case 1:
                 fragment = FragmentUserList.newInstance(usr.get("_id"), usr.get("token"));
+
                 break;
             default:
                 break;
         }
 
         if (fragment != null) {
+
             FragmentManager fragmentManager = getSupportFragmentManager();
             fragmentManager.beginTransaction()
-                    .replace(R.id.content_frame, fragment)
-                    .commit();
+                .replace(R.id.content_frame, fragment)
+                .commit();
         } else {
             Log.e("Empty fragment ", " " + position);
         }
@@ -143,8 +144,7 @@ public class MainActivity extends ActionBarActivity
 
     }
 
-
-    public void onFragmentUserListInteraction(Uri uri) {
-
+    public void onUserSelect(String userId) {
+        Toast.makeText(getBaseContext(), "" + userId, Toast.LENGTH_SHORT).show();
     }
 }

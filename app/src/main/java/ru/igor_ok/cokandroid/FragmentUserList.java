@@ -3,7 +3,6 @@ package ru.igor_ok.cokandroid;
 
 import android.app.Activity;
 import android.content.Context;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -36,7 +35,7 @@ public class FragmentUserList extends Fragment {
     private static final String ARG_UID= "param1";
     private static final String ARG_TOKEN = "param2";
 
-    private OnFragmentInteractionListener mListener;
+    private OnUserListListener mListener;
 
     // TODO: Rename and change types of parameters
     private String uId;
@@ -78,15 +77,11 @@ public class FragmentUserList extends Fragment {
                     @Override
                     public void onClick(View cView) {
                         Log.d("Click", " " + cView);
-//                        Intent intent = new Intent(getApplicationContext(), UserDetailActivity.class);
-//                        intent.putExtra("userId", item._id);
-//                        startActivity(intent);
+                        if (mListener != null) {
+                            mListener.onUserSelect(item._id);
+                        }
                     }
                 });
-
-
-
-
                 return v;
             } catch (Exception ex) {
                 Log.e("adapter exception ", "" + ex.getMessage());
@@ -189,18 +184,11 @@ public class FragmentUserList extends Fragment {
     }
 
 
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentUserListInteraction(uri);
-        }
-    }
-
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         try {
-            mListener = (OnFragmentInteractionListener) activity;
+            mListener = (OnUserListListener) activity;
         } catch (ClassCastException e) {
             Exception ex = e;
             Log.e("onAttach ", "" + ex.getMessage().toString());
@@ -223,8 +211,8 @@ public class FragmentUserList extends Fragment {
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.
      */
-    public interface OnFragmentInteractionListener {
+    public interface OnUserListListener {
         // TODO: Update argument type and name
-        public void onFragmentUserListInteraction(Uri uri);
+        public void onUserSelect(String userId);
     }
 }
