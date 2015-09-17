@@ -78,7 +78,7 @@ public class FragmentUserList extends Fragment {
                     public void onClick(View cView) {
                         Log.d("Click", " " + cView);
                         if (mListener != null) {
-                            mListener.onUserSelect(item._id);
+                            mListener.getUserDetail(item._id);
                         }
                     }
                 });
@@ -213,6 +213,6 @@ public class FragmentUserList extends Fragment {
      */
     public interface OnUserListListener {
         // TODO: Update argument type and name
-        public void onUserSelect(String userId);
+        public void getUserDetail(String userId);
     }
 }

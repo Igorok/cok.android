@@ -23,7 +23,9 @@ import android.widget.Toast;
 import java.util.Map;
 
 public class MainActivity extends ActionBarActivity
-    implements FragmentMain.OnFragmentInteractionListener, FragmentUserList.OnUserListListener
+    implements FragmentMain.OnFragmentInteractionListener,
+        FragmentUserList.OnUserListListener,
+        FragmentUserDetail.OnUserDetailListener
 {
     protected TextView user_name;
     protected TextView user_email;
@@ -140,11 +142,26 @@ public class MainActivity extends ActionBarActivity
     }
 
     @Override
-    public void onFragmentMainInteraction(Uri uri) {
+    public void onFragmentMainInteraction (Uri uri) {
 
     }
 
-    public void onUserSelect(String userId) {
-        Toast.makeText(getBaseContext(), "" + userId, Toast.LENGTH_SHORT).show();
+    public void getUserDetail(String userId) {
+        Fragment fragment = null;
+        fragment = FragmentUserDetail.newInstance(userId);
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        fragmentManager.beginTransaction()
+            .replace(R.id.content_frame, fragment)
+            .commit();
+    }
+
+    public void getChatPersonal(String personId) {
+        Toast.makeText(getBaseContext(), "" + personId, Toast.LENGTH_SHORT).show();
+        Fragment fragment = null;
+        fragment = FragmentChatPersonal.newInstance(personId);
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        fragmentManager.beginTransaction()
+            .replace(R.id.content_frame, fragment)
+            .commit();
     }
 }
