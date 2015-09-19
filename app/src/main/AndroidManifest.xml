@@ -42,19 +42,6 @@
             android:label="@string/title_activity_main"
             >
         </activity>
-        <activity
-            android:name=".UserListActivity"
-            android:label="@string/title_activity_user_list" >
-        </activity>
-        <activity
-            android:name=".UserDetailActivity"
-            android:label="@string/title_activity_user_detail"
-        >
-        </activity>
-        <activity
-            android:name=".PersonalChatActivity"
-            android:label="@string/title_activity_personal_chat" >
-        </activity>
 
 
     </application>

@@ -25,14 +25,14 @@ import java.util.Map;
 
 public class FragmentUserDetail extends Fragment {
     private static final String ARG_USR_ID = "userId";
-    private static final String ARG_UID = "uId";
-    private static final String ARG_TOKEN = "token";
 
     private CokModel cm;
 
     private String userId;
     private String uId;
     private String token;
+    private String login;
+    private String email;
 
     private Button btn_chat_personal;
     private TextView user_name;
@@ -80,11 +80,7 @@ public class FragmentUserDetail extends Fragment {
             if (result != null)
             {
                 if (result instanceof Exception) {
-                    Context context = getActivity();
-                    CharSequence text = ((Exception) result).getMessage();
-                    int duration = Toast.LENGTH_SHORT;
-                    Toast toast = Toast.makeText(context, text, duration);
-                    toast.show();
+                    cm.errToast((Exception) result);
                 }
                 else {
                     GsonBuilder builder = new GsonBuilder();
@@ -92,12 +88,15 @@ public class FragmentUserDetail extends Fragment {
                     Gson gson = builder.create();
 
                     UserModel.UserItem uDetail = gson.fromJson(result.toString(), UserModel.UserItem.class);
-                    String login = uDetail.login;
-                    String email = uDetail.email;
+                    login = uDetail.login;
+                    email = uDetail.email;
 
                     user_name.setText(login);
                     user_email.setText(email);
 
+                    if (mListener != null) {
+                        mListener.setTitle(login);
+                    }
 
                 }
 
@@ -128,11 +127,6 @@ public class FragmentUserDetail extends Fragment {
         btn_chat_personal.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View cView) {
-                Log.d("Fragment", " " + userId);
-                int duration = Toast.LENGTH_SHORT;
-                Toast toast = Toast.makeText(getActivity(), userId, duration);
-                toast.show();
-
                 if (mListener != null) {
                     mListener.getChatPersonal(userId);
                 }
@@ -162,6 +156,7 @@ public class FragmentUserDetail extends Fragment {
     public interface OnUserDetailListener {
         // TODO: Update argument type and name
         public void getChatPersonal(String personId);
+        public void setTitle(String login);
     }
 
 }

@@ -24,11 +24,7 @@ import org.json.JSONObject;
 import java.util.Map;
 
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link FragmentUserList#newInstance} factory method to
- * create an instance of this fragment.
- */
+
 public class FragmentUserList extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -38,6 +34,7 @@ public class FragmentUserList extends Fragment {
     private OnUserListListener mListener;
 
     // TODO: Rename and change types of parameters
+    private Map<String, String> usr;
     private String uId;
     private String token;
     private View fView;
@@ -48,7 +45,6 @@ public class FragmentUserList extends Fragment {
 
     public class UserListAdapter extends ArrayAdapter<UserModel.UserItem> {
         private int layoutResourceId;
-        private static final String LOG_TAG = "UserListAdapter";
 
         public UserListAdapter(Context context, int textViewResourceId) {
             super(context, textViewResourceId);
@@ -76,7 +72,6 @@ public class FragmentUserList extends Fragment {
                 v.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View cView) {
-                        Log.d("Click", " " + cView);
                         if (mListener != null) {
                             mListener.getUserDetail(item._id);
                         }
@@ -140,21 +135,9 @@ public class FragmentUserList extends Fragment {
             }
         }
     }
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param _uId is a id of current user
-     * @param _token is a token for web auth
-     * @return A new instance of fragment FragmentUserList.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static FragmentUserList newInstance(String _uId, String _token) {
+
+    public static FragmentUserList newInstance() {
         FragmentUserList fragment = new FragmentUserList();
-        Bundle args = new Bundle();
-        args.putString(ARG_UID, _uId);
-        args.putString(ARG_TOKEN, _token);
-        fragment.setArguments(args);
         return fragment;
     }
 
@@ -170,6 +153,9 @@ public class FragmentUserList extends Fragment {
             token = getArguments().getString(ARG_TOKEN);
         }
         cm = new CokModel(getActivity());
+        usr = cm.getUser();
+        uId = usr.get("_id");
+        token = usr.get("token");
         adapter = new UserListAdapter(getActivity(), R.layout.user_item);
         new GetUsers().execute();
     }
@@ -178,8 +164,6 @@ public class FragmentUserList extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         fView = inflater.inflate(R.layout.fragment_user_list, container, false);
         userListView = (ListView) fView.findViewById(R.id.userListView);
-
-
         return fView;
     }
 
@@ -201,16 +185,6 @@ public class FragmentUserList extends Fragment {
         mListener = null;
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p/>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
     public interface OnUserListListener {
         // TODO: Update argument type and name
         public void getUserDetail(String userId);

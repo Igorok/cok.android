@@ -5,35 +5,30 @@
     tools:context=".MainActivity"
     >
 
-    <item
-        android:id="@+id/a_More"
-        android:icon="@drawable/abc_ic_menu_moreoverflow_mtrl_alpha"
-        app:showAsAction="ifRoom"
-        android:title="More"
-        >
-        <menu>
-            <item android:id="@+id/show_users"
-                android:title="Show users"
-                android:orderInCategory="1"
-                app:showAsAction="never"
-                />
-            <item android:id="@+id/show_friends"
-                android:title="Show friend"
-                android:orderInCategory="1"
-                app:showAsAction="never"
-                />
 
-            <item android:id="@+id/show_chat_room"
-                android:title="Show chat rooms"
-                android:orderInCategory="2"
-                app:showAsAction="never"
-                />
-        </menu>
-    </item>
+    <!--<item-->
+        <!--android:id="@+id/a_More"-->
+        <!--android:icon="@drawable/abc_ic_menu_moreoverflow_mtrl_alpha"-->
+        <!--app:showAsAction="ifRoom"-->
+        <!--android:title="More"-->
+        <!-->-->
+        <!--<menu>-->
+            <!--<item android:id="@+id/show_users"-->
+                <!--android:title="Show users"-->
+                <!--android:orderInCategory="1"-->
+                <!--app:showAsAction="never"-->
+                <!--/>-->
+            <!--<item android:id="@+id/show_friends"-->
+                <!--android:title="Show friend"-->
+                <!--android:orderInCategory="1"-->
+                <!--app:showAsAction="never"-->
+                <!--/>-->
 
-
-
-
-
-
+            <!--<item android:id="@+id/show_chat_room"-->
+                <!--android:title="Show chat rooms"-->
+                <!--android:orderInCategory="2"-->
+                <!--app:showAsAction="never"-->
+                <!--/>-->
+        <!--</menu>-->
+    <!--</item>-->
 </menu>

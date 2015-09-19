@@ -16,7 +16,11 @@
         <item name="actionMenuTextColor">#fff</item>
         <item name="windowActionBarOverlay">false</item>
         <item name="actionMenuTextAppearance">@style/MyTitleTextStyle</item>
+
+        <item name="homeAsUpIndicator">@drawable/abc_ic_menu_moreoverflow_mtrl_alpha</item>
     </style>
+
+
 
     <style name="MyTitleTextStyle" parent="@style/TextAppearance.AppCompat.Widget.ActionBar.Title">
         <item name="android:textColor">#ffffff</item>

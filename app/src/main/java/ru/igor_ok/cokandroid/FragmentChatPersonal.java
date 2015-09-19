@@ -1,6 +1,6 @@
 package ru.igor_ok.cokandroid;
 
-import android.content.Context;
+import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -10,7 +10,6 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import com.github.nkzawa.emitter.Emitter;
 import com.github.nkzawa.socketio.client.IO;
@@ -27,8 +26,10 @@ import java.util.Map;
 
 public class FragmentChatPersonal extends Fragment {
     private static final String ARG_PID = "pId";
+    private OnChatPersListener mListener;
 
     private CokModel cm;
+    Activity mActivity;
 
     private String pId;
     private String uLogin;
@@ -36,6 +37,7 @@ public class FragmentChatPersonal extends Fragment {
     private String token;
 
     private View fView;
+    private ListView lv;
     private String socketio;
 
     private ImageButton sendBtn;
@@ -50,7 +52,7 @@ public class FragmentChatPersonal extends Fragment {
         @Override
         public void call(final Object... args) {
             try {
-                getActivity().runOnUiThread(new Runnable() {
+                mActivity.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         try {
@@ -67,15 +69,13 @@ public class FragmentChatPersonal extends Fragment {
                                 uLogins += myStr.login + " ";
                             }
 
-//                            android.support.v7.app.ActionBar actionBar = getActivity().getSupportActionBar();
-//                            actionBar.setTitle(uLogins);
-
-
-                            msgAdp = new ChatModel.MsgListAdapter(getActivity(), R.layout.chat_msg_item);
+                            msgAdp = new ChatModel.MsgListAdapter(mActivity, R.layout.chat_msg_item);
                             msgAdp.addAll(cr.history);
 
-                            ListView lv = (ListView) fView.findViewById(R.id.msgListView);
+
                             lv.setAdapter(msgAdp);
+
+                            mListener.setTitle(uLogins);
 
                         } catch (Exception e) {
                             Exception ex = e;
@@ -108,7 +108,7 @@ public class FragmentChatPersonal extends Fragment {
         @Override
         public void call(final Object... args) {
             try {
-                getActivity().runOnUiThread(new Runnable() {
+                mActivity.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         try {
@@ -154,13 +154,19 @@ public class FragmentChatPersonal extends Fragment {
         if (getArguments() != null) {
             pId = getArguments().getString(ARG_PID);
         }
-        cm = new CokModel(getActivity());
+        mActivity = getActivity();
+        cm = new CokModel(mActivity);
+        Map<String, String> usr = cm.getUser();
+        token = usr.get("token");
+        uId = usr.get("_id");
+        uLogin = usr.get("login");
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         fView = inflater.inflate(R.layout.fragment_chat_personal, container, false);
+        lv = (ListView) fView.findViewById(R.id.msgListView);
         sendBtn = (ImageButton) fView.findViewById(R.id.send_button);
         sendBtn.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -176,25 +182,18 @@ public class FragmentChatPersonal extends Fragment {
         sendText = (EditText) fView.findViewById(R.id.send_text);
 
 
-        socketio = this.getString(R.string.socketio);
+        socketio = mActivity.getString(R.string.socketio);
         {
             try {
                 mSocket = IO.socket(socketio);
             } catch (Exception e) {
                 Exception ex = e;
-                Log.e("post exception ", "" + ex.getMessage());
-                Context context = getActivity();
-                CharSequence text = ex.getMessage();
-                int duration = Toast.LENGTH_SHORT;
-                Toast toast = Toast.makeText(context, text, duration);
-                toast.show();
+                Log.e("socketio ", "" + ex.getMessage());
+                cm.errToast(ex);
             }
         }
 
-        Map<String, String> usr = cm.getUser();
-        token = usr.get("token");
-        uId = usr.get("_id");
-        uLogin = usr.get("login");
+
 
         mSocket.on("joinPersonal", joinPersonal);
         mSocket.on("message", getMessage);
@@ -213,6 +212,28 @@ public class FragmentChatPersonal extends Fragment {
         return fView;
     }
 
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        try {
+            mListener = (OnChatPersListener) activity;
+        } catch (ClassCastException e) {
+            Exception ex = e;
+            Log.e("onAttach ", "" + ex.getMessage().toString());
+        }
+    }
 
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mSocket.disconnect();
+        mSocket.off("message", getMessage);
+        mSocket.off("joinPersonal", joinPersonal);
+
+        mListener = null;
+    }
+    public interface OnChatPersListener {
+        public void setTitle(String title);
+    }
 
 }

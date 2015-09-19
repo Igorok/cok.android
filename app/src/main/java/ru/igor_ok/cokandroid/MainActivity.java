@@ -6,7 +6,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 
 
-import android.content.Intent;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -18,17 +17,15 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 import java.util.Map;
 
 public class MainActivity extends ActionBarActivity
     implements FragmentMain.OnFragmentInteractionListener,
         FragmentUserList.OnUserListListener,
-        FragmentUserDetail.OnUserDetailListener
+        FragmentUserDetail.OnUserDetailListener,
+        FragmentChatPersonal.OnChatPersListener
 {
-    protected TextView user_name;
-    protected TextView user_email;
     protected CokModel cm;
 
 
@@ -39,35 +36,57 @@ public class MainActivity extends ActionBarActivity
     private Map<String, String> usr;
 
 
-    private void fragmentInit (int position) {
-        Toast.makeText(getBaseContext(), "" + position, Toast.LENGTH_SHORT).show();
-        Fragment fragment = null;
-
-        switch (position) {
-            case 0:
-                fragment = FragmentMain.newInstance(usr.get("login"), usr.get("email"));
-                break;
-            case 1:
-                fragment = FragmentUserList.newInstance(usr.get("_id"), usr.get("token"));
-
-                break;
-            default:
-                break;
-        }
-
+    private void fragmentInit (Fragment fragment) {
         if (fragment != null) {
-
             FragmentManager fragmentManager = getSupportFragmentManager();
             fragmentManager.beginTransaction()
                 .replace(R.id.content_frame, fragment)
                 .commit();
-        } else {
-            Log.e("Empty fragment ", " " + position);
-        }
 
+            navLayout.closeDrawer(navList);
+        } else {
+            Log.d("Empty fragment ", "");
+        }
+    }
+
+    // change views
+    private void menuClick (int position) {
+        Fragment fragment = null;
+        switch (position) {
+            case 0:
+                fragment = FragmentMain.newInstance();
+                break;
+            case 1:
+                String title = getString(R.string.title_activity_user_list);
+                fragment = FragmentUserList.newInstance();
+                setTitle(title);
+                break;
+            default:
+                break;
+        }
+        fragmentInit(fragment);
+    }
+
+    @Override
+    public void onFragmentMainInteraction (Uri uri) {
 
     }
 
+    public void setTitle (String _title) {
+        android.support.v7.app.ActionBar actionBar = MainActivity.this.getSupportActionBar();
+        actionBar.setTitle(_title);
+    }
+
+    public void getUserDetail(String userId) {
+        Fragment fragment = FragmentUserDetail.newInstance(userId);
+        fragmentInit(fragment);
+    }
+
+    public void getChatPersonal(String personId) {
+        Toast.makeText(getBaseContext(), "" + personId, Toast.LENGTH_SHORT).show();
+        Fragment fragment = FragmentChatPersonal.newInstance(personId);
+        fragmentInit(fragment);
+    }
 
 
     @Override
@@ -78,14 +97,17 @@ public class MainActivity extends ActionBarActivity
         cm = new CokModel(this);
         usr = cm.getUser();
 
-        navTitles = new String[] {"Profile " + usr.get("login"), "Users", "Friends", "Chat rooms"};
+        navTitles = new String[] {
+            "Profile " + usr.get("login"),
+            "Users",
+            "Friends",
+            "Chat rooms"
+        };
         navLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         navList = (ListView) findViewById(R.id.left_drawer);
 
-
-
-
-
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setHomeButtonEnabled(true);
 
         strAdapter = new ArrayAdapter<String> (this, R.layout.drawer_nav_item);
         strAdapter.addAll(navTitles);
@@ -93,75 +115,29 @@ public class MainActivity extends ActionBarActivity
         navList.setClickable(true);
         navList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                fragmentInit(position);
+                menuClick(position);
             }
         });
 
-
-
-        fragmentInit(0);
-
+        menuClick(0);
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-
-
+    public boolean onCreateOptionsMenu (Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu_main, menu);
         return super.onCreateOptionsMenu(menu);
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
+    public boolean onOptionsItemSelected (MenuItem item) {
         int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
         switch (id) {
-            case R.id.show_users:
-                Intent i = new Intent(getApplicationContext(), UserListActivity.class);
-                startActivity(i);
-            case R.id.show_friends:
-                return true;
-            case R.id.show_chat_room:
+            case android.R.id.home:
+                navLayout.openDrawer(navList);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
-    }
-
-
-
-    public void appShowUsers (View view) {
-        Intent i = new Intent(getApplicationContext(), UserListActivity.class);
-        startActivity(i);
-    }
-
-    @Override
-    public void onFragmentMainInteraction (Uri uri) {
-
-    }
-
-    public void getUserDetail(String userId) {
-        Fragment fragment = null;
-        fragment = FragmentUserDetail.newInstance(userId);
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        fragmentManager.beginTransaction()
-            .replace(R.id.content_frame, fragment)
-            .commit();
-    }
-
-    public void getChatPersonal(String personId) {
-        Toast.makeText(getBaseContext(), "" + personId, Toast.LENGTH_SHORT).show();
-        Fragment fragment = null;
-        fragment = FragmentChatPersonal.newInstance(personId);
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        fragmentManager.beginTransaction()
-            .replace(R.id.content_frame, fragment)
-            .commit();
     }
 }
