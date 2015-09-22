@@ -1,6 +1,7 @@
 package ru.igor_ok.cokandroid;
 
 
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -17,7 +18,8 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.Toast;
+
+import java.util.HashMap;
 import java.util.Map;
 
 public class MainActivity extends ActionBarActivity
@@ -28,43 +30,84 @@ public class MainActivity extends ActionBarActivity
 {
     protected CokModel cm;
 
-
     private String[] navTitles;
+
+
     private DrawerLayout navLayout;
     private ListView navList;
     private ArrayAdapter<String> strAdapter;
     private Map<String, String> usr;
 
 
-    private void fragmentInit (Fragment fragment) {
-        if (fragment != null) {
-            FragmentManager fragmentManager = getSupportFragmentManager();
-            fragmentManager.beginTransaction()
-                .replace(R.id.content_frame, fragment)
-                .commit();
+    String fId = "0";
+    Map<String, String> fData = null;
 
-            navLayout.closeDrawer(navList);
-        } else {
-            Log.d("Empty fragment ", "");
+    private void fragmentLaunch(String _fId, Map<String, String> _fData) {
+        SharedPreferences fStorage = getSharedPreferences("fragment", 0);
+        SharedPreferences.Editor editor = fStorage.edit();
+        editor.putString("fId", _fId);
+        if (_fData != null) {
+            for (String s : _fData.keySet()) {
+                String key = s;
+                String value = _fData.get(key);
+                editor.putString(key, value);
+            }
         }
-    }
+        editor.commit();
 
-    // change views
-    private void menuClick (int position) {
+
+        String title = null;
         Fragment fragment = null;
-        switch (position) {
-            case 0:
+        switch (_fId) {
+            case "0":
+                title = getString(R.string.title_activity_main);
                 fragment = FragmentMain.newInstance();
+                setTitle(title);
                 break;
-            case 1:
-                String title = getString(R.string.title_activity_user_list);
+            case "1":
+                title = getString(R.string.title_activity_user_list);
                 fragment = FragmentUserList.newInstance();
+                setTitle(title);
+                break;
+            case "uDetail":
+                title = getString(R.string.title_activity_user_detail);
+                fragment = FragmentUserDetail.newInstance(_fData.get("userId"));
+                setTitle(title);
+                break;
+            case "cPersonal":
+                title = getString(R.string.title_activity_personal_chat);
+                fragment = FragmentChatPersonal.newInstance(_fData.get("userId"));
                 setTitle(title);
                 break;
             default:
                 break;
         }
-        fragmentInit(fragment);
+
+
+        if (fragment != null) {
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            fragmentManager.beginTransaction()
+                    .replace(R.id.content_frame, fragment)
+                    .commit();
+
+            navLayout.closeDrawer(navList);
+        } else {
+            Log.d("Empty fragment ", "");
+        }
+
+    }
+
+    private void fragmentRestore () {
+        SharedPreferences fStorage;
+        fStorage = getSharedPreferences("fragment", 0);
+        String _fId = fStorage.getString("fId", "0");
+        Map<String, String> _fData = new HashMap<String, String>();
+        if ((_fId == "uDetail") || (_fId == "cPersonal")) {
+            String userId = fStorage.getString("userId", "");
+            _fData.put("userId", userId);
+        }
+
+        fragmentLaunch(_fId, _fData);
     }
 
     @Override
@@ -78,14 +121,15 @@ public class MainActivity extends ActionBarActivity
     }
 
     public void getUserDetail(String userId) {
-        Fragment fragment = FragmentUserDetail.newInstance(userId);
-        fragmentInit(fragment);
+        Map<String, String> _fData = new HashMap<String, String>();
+        _fData.put("userId", userId);
+        fragmentLaunch("uDetail", _fData);
     }
 
-    public void getChatPersonal(String personId) {
-        Toast.makeText(getBaseContext(), "" + personId, Toast.LENGTH_SHORT).show();
-        Fragment fragment = FragmentChatPersonal.newInstance(personId);
-        fragmentInit(fragment);
+    public void getChatPersonal(String userId) {
+        Map<String, String> _fData = new HashMap<String, String>();
+        _fData.put("userId", userId);
+        fragmentLaunch("cPersonal", _fData);
     }
 
 
@@ -115,11 +159,11 @@ public class MainActivity extends ActionBarActivity
         navList.setClickable(true);
         navList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                menuClick(position);
+                fragmentLaunch("" + position, null);
             }
         });
 
-        menuClick(0);
+        fragmentRestore();
     }
 
     @Override

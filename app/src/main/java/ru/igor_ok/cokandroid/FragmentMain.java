@@ -34,6 +34,8 @@ public class FragmentMain extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setRetainInstance(true);
+
         cm = new CokModel(getActivity());
         usr = cm.getUser();
         login = usr.get("login");

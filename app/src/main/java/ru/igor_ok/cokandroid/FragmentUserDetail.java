@@ -107,6 +107,8 @@ public class FragmentUserDetail extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setRetainInstance(true);
+
         if (getArguments() != null) {
             userId = getArguments().getString(ARG_USR_ID);
         }

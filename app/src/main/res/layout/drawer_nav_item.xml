@@ -1,5 +1,5 @@
 <TextView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/nav_item"
+    android:id="@+id/nav_id"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     style="@style/nav_title"
