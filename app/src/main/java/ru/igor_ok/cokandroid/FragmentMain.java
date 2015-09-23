@@ -58,9 +58,9 @@ public class FragmentMain extends Fragment {
         user_email.setText(email);
 
 
-        int duration = Toast.LENGTH_SHORT;
-        Toast toast = Toast.makeText(getActivity(), login, duration);
-        toast.show();
+//        int duration = Toast.LENGTH_SHORT;
+//        Toast toast = Toast.makeText(getActivity(), login, duration);
+//        toast.show();
         return v;
     }
 

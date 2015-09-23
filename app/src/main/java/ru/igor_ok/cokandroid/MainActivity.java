@@ -18,6 +18,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -37,10 +38,6 @@ public class MainActivity extends ActionBarActivity
     private ListView navList;
     private ArrayAdapter<String> strAdapter;
     private Map<String, String> usr;
-
-
-    String fId = "0";
-    Map<String, String> fData = null;
 
     private void fragmentLaunch(String _fId, Map<String, String> _fData) {
         SharedPreferences fStorage = getSharedPreferences("fragment", 0);
@@ -71,12 +68,12 @@ public class MainActivity extends ActionBarActivity
                 break;
             case "uDetail":
                 title = getString(R.string.title_activity_user_detail);
-                fragment = FragmentUserDetail.newInstance(_fData.get("userId"));
+                fragment = FragmentUserDetail.newInstance(_fData.get("fUId"));
                 setTitle(title);
                 break;
             case "cPersonal":
                 title = getString(R.string.title_activity_personal_chat);
-                fragment = FragmentChatPersonal.newInstance(_fData.get("userId"));
+                fragment = FragmentChatPersonal.newInstance(_fData.get("fUId"));
                 setTitle(title);
                 break;
             default:
@@ -100,11 +97,12 @@ public class MainActivity extends ActionBarActivity
     private void fragmentRestore () {
         SharedPreferences fStorage;
         fStorage = getSharedPreferences("fragment", 0);
-        String _fId = fStorage.getString("fId", "0");
+        String _fId = fStorage.getString("fId", "0").trim();
         Map<String, String> _fData = new HashMap<String, String>();
-        if ((_fId == "uDetail") || (_fId == "cPersonal")) {
-            String userId = fStorage.getString("userId", "");
-            _fData.put("userId", userId);
+
+        if (_fId.equals("uDetail") || _fId.equals("cPersonal")) {
+            String fUId = fStorage.getString("fUId", "");
+            _fData.put("fUId", fUId);
         }
 
         fragmentLaunch(_fId, _fData);
@@ -122,13 +120,13 @@ public class MainActivity extends ActionBarActivity
 
     public void getUserDetail(String userId) {
         Map<String, String> _fData = new HashMap<String, String>();
-        _fData.put("userId", userId);
+        _fData.put("fUId", userId);
         fragmentLaunch("uDetail", _fData);
     }
 
     public void getChatPersonal(String userId) {
         Map<String, String> _fData = new HashMap<String, String>();
-        _fData.put("userId", userId);
+        _fData.put("fUId", userId);
         fragmentLaunch("cPersonal", _fData);
     }
 
