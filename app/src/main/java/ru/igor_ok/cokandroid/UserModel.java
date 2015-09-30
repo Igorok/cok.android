@@ -1,5 +1,7 @@
 package ru.igor_ok.cokandroid;
 
+import android.provider.BaseColumns;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,7 +16,7 @@ public class UserModel {
         public String _id;
         public String login;
         public String email;
-        public Boolean friend;
+        public Integer friend;
     }
 
     public class UserList {

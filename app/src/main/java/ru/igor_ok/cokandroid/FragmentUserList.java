@@ -21,8 +21,10 @@ import com.google.gson.GsonBuilder;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.util.List;
 import java.util.Map;
 
+import static ru.igor_ok.cokandroid.SqlHelper.*;
 
 
 public class FragmentUserList extends Fragment {
@@ -41,6 +43,7 @@ public class FragmentUserList extends Fragment {
     private ListView userListView;
 
     protected CokModel cm;
+    protected SqlHelper.UserOpenHelper sql;
     protected UserListAdapter adapter;
 
     public class UserListAdapter extends ArrayAdapter<UserModel.UserItem> {
@@ -130,8 +133,18 @@ public class FragmentUserList extends Fragment {
                 Gson gson = builder.create();
 
                 UserModel.UserList uRes = gson.fromJson(result.toString(), UserModel.UserList.class);
-                adapter.addAll(uRes.users);
+
+
+                List<UserModel.UserItem> ul = sql.uGetAll();
+                if (ul.size() == 0) {
+                    sql.uInsert(uRes);
+                    ul = sql.uGetAll();
+                }
+                adapter.addAll(ul);
                 userListView.setAdapter(adapter);
+
+
+
             }
         }
     }
@@ -155,6 +168,7 @@ public class FragmentUserList extends Fragment {
             token = getArguments().getString(ARG_TOKEN);
         }
         cm = new CokModel(getActivity());
+        sql = new SqlHelper().new UserOpenHelper(getActivity());
         usr = cm.getUser();
         uId = usr.get("_id");
         token = usr.get("token");
