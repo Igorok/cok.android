@@ -2,7 +2,9 @@ package ru.igor_ok.cokandroid;
 
 
 import android.app.Activity;
+import android.app.LoaderManager;
 import android.content.Context;
+import android.content.Loader;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -21,13 +23,16 @@ import com.google.gson.GsonBuilder;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 import static ru.igor_ok.cokandroid.SqlHelper.*;
 
 
-public class FragmentUserList extends Fragment {
+public class FragmentUserList extends Fragment
+    implements LoaderManager.LoaderCallbacks<Object>
+{
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_UID= "param1";
@@ -45,6 +50,39 @@ public class FragmentUserList extends Fragment {
     protected CokModel cm;
     protected SqlHelper.UserOpenHelper sql;
     protected UserListAdapter adapter;
+    private Activity activity;
+
+
+
+    @Override
+    public Loader<Object> onCreateLoader(int i, Bundle bundle) {
+        return new UserListLoader(getActivity());
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Object> loader, Object result) {
+        GsonBuilder builder = new GsonBuilder();
+
+
+        builder.setPrettyPrinting().serializeNulls();
+        Gson gson = builder.create();
+
+        UserModel.UserList uRes = gson.fromJson(result.toString(), UserModel.UserList.class);
+
+
+//        List<UserModel.UserItem> ul = sql.uGetAll();
+//        if (ul.size() == 0) {
+//            sql.uInsert(uRes);
+//            ul = sql.uGetAll();
+//        }
+        adapter.addAll(uRes.users);
+        userListView.setAdapter(adapter);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Object> loader) {
+        Log.e("Loader reset", "user list");
+    }
 
     public class UserListAdapter extends ArrayAdapter<UserModel.UserItem> {
         private int layoutResourceId;
@@ -167,13 +205,54 @@ public class FragmentUserList extends Fragment {
             uId = getArguments().getString(ARG_UID);
             token = getArguments().getString(ARG_TOKEN);
         }
+        activity = getActivity();
+
+
         cm = new CokModel(getActivity());
         sql = new SqlHelper().new UserOpenHelper(getActivity());
         usr = cm.getUser();
         uId = usr.get("_id");
         token = usr.get("token");
         adapter = new UserListAdapter(getActivity(), R.layout.user_item);
-        new GetUsers().execute();
+
+        Bundle args = new Bundle();
+        try {
+            Loader loader = getActivity().getLoaderManager().initLoader(0, args, this);
+            loader.forceLoad();
+        } catch (Exception e) {
+            Exception ex = e;
+
+        }
+
+
+
+
+        /*
+        java.lang.IllegalArgumentException: Object returned from onCreateLoader must not be a non-static inner member class: UserListLoader{424a3750 id=0}
+
+
+
+            if(date1.after(date2)){
+                System.out.println("Date1 is after Date2");
+            }
+        */
+        /*
+        Date lastReqDate = cm.getLastReqDate();
+        List<UserModel.UserItem> ul = sql.uGetAll();
+
+
+
+
+
+        if ((ul.size() == 0) || (lastReqDate == null)) {
+            new GetUsers().execute();
+        } else {
+            adapter.addAll(ul);
+            userListView.setAdapter(adapter);
+        }
+
+        */
+
     }
 
     @Override

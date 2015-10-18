@@ -1,5 +1,6 @@
 package ru.igor_ok.cokandroid;
 
+import android.content.AsyncTaskLoader;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -23,7 +24,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.text.SimpleDateFormat;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -44,6 +47,9 @@ public class CokModel {
     private Context mContext;
     private Map<String, String> user = new HashMap<>();
     private String restUrl = null;
+    public SimpleDateFormat dFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+
 
     public CokModel(Context mContext) {
         this.mContext = mContext;
@@ -56,6 +62,32 @@ public class CokModel {
 
         restUrl = mContext.getString(R.string.jsonrpc);
     }
+
+    public Date getLastReqDate() {
+        SharedPreferences userStorage;
+        userStorage = mContext.getSharedPreferences("user", 0);
+        String lastReqDate = userStorage.getString("lastReqDate", null);
+        if (lastReqDate == null) {
+            return null;
+        }
+        Date d = null;
+        try {
+            d = dFormat.parse(lastReqDate);
+        } catch (Exception e) {
+            Exception ex = e;
+            this.errToast(ex);
+        }
+        return d;
+    }
+
+    public void setLastReqDate(Date d) {
+        String dStr = dFormat.format(d);
+        SharedPreferences userStorage = mContext.getSharedPreferences("user", 0);
+        SharedPreferences.Editor editor = userStorage.edit();
+        editor.putString("lastReqDate", dStr);
+        editor.commit();
+    }
+
 
     public void errToast (Exception e) {
         Exception ex = e;
@@ -153,6 +185,22 @@ public class CokModel {
         Log.d("answer", result.trim());
         return result.toString().trim();
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
