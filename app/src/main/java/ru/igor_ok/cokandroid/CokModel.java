@@ -25,9 +25,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -48,7 +50,11 @@ public class CokModel {
     private Map<String, String> user = new HashMap<>();
     private String restUrl = null;
     public SimpleDateFormat dFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
+    public class mItem {
+        public String key;
+        public String title;
+    }
+    private List<mItem> mList = new ArrayList<mItem>();
 
 
     public CokModel(Context mContext) {
@@ -61,6 +67,26 @@ public class CokModel {
         user.put("email", userStorage.getString("email", ""));
 
         restUrl = mContext.getString(R.string.jsonrpc);
+
+        mItem mi = new mItem();
+        mi.key = "Main";
+        mi.title = mContext.getString(R.string.title_activity_main) + " " + user.get("login");
+        mList.add(mi);
+
+        mi = new mItem();
+        mi.key = "uList";
+        mi.title = mContext.getString(R.string.title_activity_user_list);
+        mList.add(mi);
+
+        mi = new mItem();
+        mi.key = "fList";
+        mi.title = "Friends";
+        mList.add(mi);
+
+        mi = new mItem();
+        mi.key = "cRom";
+        mi.title = "Chat rooms";
+        mList.add(mi);
     }
 
     public Date getLastReqDate() {
@@ -89,7 +115,7 @@ public class CokModel {
     }
 
 
-    public void errToast (Exception e) {
+    public void errToast(Exception e) {
         Exception ex = e;
         Log.e("get message ", "" + ex.getMessage());
         Context context = this.mContext.getApplicationContext();
@@ -100,11 +126,15 @@ public class CokModel {
     }
 
 
-    protected Map<String, String> getUser () {
+    protected Map<String, String> getUser() {
         return user;
     }
 
-    protected JSONObject getJsObj (String _method, JSONArray _params) throws Exception {
+    protected List getMenu() {
+        return mList;
+    }
+
+    protected JSONObject getJsObj(String _method, JSONArray _params) throws Exception {
         JSONObject jsObj = new JSONObject();
         Exception ex = null;
         try {
@@ -133,10 +163,10 @@ public class CokModel {
     }
 
     private static String convertInputStreamToString(InputStream inputStream) throws IOException {
-        BufferedReader bufferedReader = new BufferedReader( new InputStreamReader(inputStream));
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
         String line = "";
         String result = "";
-        while((line = bufferedReader.readLine()) != null) {
+        while ((line = bufferedReader.readLine()) != null) {
             result += line;
         }
         inputStream.close();
@@ -145,7 +175,7 @@ public class CokModel {
 
     protected String POST(String jsonData) throws Exception {
         Exception ex = null;
-        if (! this.isNetworkConnected()) {
+        if (!this.isNetworkConnected()) {
             ex = new Exception("internet connection not found");
         }
 
@@ -160,7 +190,7 @@ public class CokModel {
             httppost.setHeader("Content-type", "application/json");
             HttpResponse httpResponse = httpclient.execute(httppost);
             inputStream = httpResponse.getEntity().getContent();
-            if(inputStream != null) {
+            if (inputStream != null) {
                 result = convertInputStreamToString(inputStream);
             } else {
                 result = "Did not work!";
@@ -185,24 +215,50 @@ public class CokModel {
         Log.d("answer", result.trim());
         return result.toString().trim();
     }
+}
 
 
+/**
+ * get user list from http
+ */
+class UserListLoader extends AsyncTaskLoader<Object> {
+    private JSONObject qwe = new JSONObject();
+    private CokModel cm = null;
+    private String uId = null;
+    private String token = null;
+
+    public UserListLoader(Context context) {
+        super(context);
+
+        cm = new CokModel(context);
+        Map<String, String> user = cm.getUser();
+        uId = user.get("_id");
+        token = user.get("token");
 
 
+    }
 
+    @Override
+    public Object loadInBackground() {
+        JSONObject uParam = new JSONObject();
+        try {
+            uParam.put("uId", uId);
+            uParam.put("token", token);
 
+            JSONArray uArr = new JSONArray();
+            uArr.put(uParam);
+            JSONObject jsObj = cm.getJsObj("user.getUserList", uArr);
 
+            String postRes = cm.POST(jsObj.toString());
+            JSONObject pR = new JSONObject(postRes);
+            JSONArray rA = pR.getJSONArray("result");
+            JSONArray uA = rA.getJSONArray(0);
+            qwe.put("users", uA);
+        } catch (Exception e) {
+            Log.e("User loader ", "" + e.getMessage());
+        }
 
-
-
-
-
-
-
-
-
-
-
-
+        return qwe;
+    }
 
 }
