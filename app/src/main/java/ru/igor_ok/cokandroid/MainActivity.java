@@ -1,18 +1,15 @@
 package ru.igor_ok.cokandroid;
 
 
-import android.app.FragmentTransaction;
 import android.content.SharedPreferences;
 import android.net.Uri;
-import android.support.annotation.NonNull;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
+import android.app.Fragment;
+import android.app.FragmentManager;
 
 
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -20,13 +17,9 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.Toast;
 
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 
 public class MainActivity extends ActionBarActivity
@@ -42,14 +35,24 @@ public class MainActivity extends ActionBarActivity
 
 
     private FragmentManager fManager;
-    private android.support.v4.app.FragmentTransaction fTransaction;
+    private android.app.FragmentTransaction fTransaction;
 
     private DrawerLayout navLayout;
     private ListView navList;
     private ArrayAdapter<String> strAdapter;
     private Map<String, String> usr;
 
-    private void fragmentLaunch(String _fId, Map<String, String> _fData) {
+
+
+
+
+    private FragmentMain fMain = null;
+    private FragmentUserList fUserList = null;
+    private FragmentUserDetail fUserDetail = null;
+    private FragmentChatPersonal fChatPersonal = null;
+
+
+    private void fragmentLaunch(String _fId, Map<String, String> _fData, Boolean rest) {
         SharedPreferences fStorage = getSharedPreferences("fragment", 0);
         SharedPreferences.Editor editor = fStorage.edit();
         editor.putString("fId", _fId);
@@ -61,55 +64,59 @@ public class MainActivity extends ActionBarActivity
             }
         }
         editor.commit();
-
-
-        String title = null;
-        Fragment fragment = fManager.findFragmentByTag(_fId);
         switch (_fId) {
             case "Main":
-                if (fragment == null) {
-                    fragment = FragmentMain.newInstance();
-                    fTransaction = fManager.beginTransaction();
-                    fTransaction.replace(R.id.content_frame, fragment);
-                    fTransaction.commit();
-                }
-                title = getString(R.string.title_activity_main);
-                setTitle(title);
+                setTitle(getString(R.string.title_activity_main));
                 break;
             case "uList":
-                if (fragment == null) {
-                    fragment = FragmentUserList.newInstance();
-                    fTransaction = fManager.beginTransaction();
-                    fTransaction.replace(R.id.content_frame, fragment);
-                    fTransaction.commit();
-                }
-                title = getString(R.string.title_activity_user_list);
-                setTitle(title);
+                setTitle(getString(R.string.title_activity_user_list));
                 break;
             case "uDet":
-                if (fragment == null) {
-                    fragment = FragmentUserDetail.newInstance(_fData.get("fUId"));
-                    fTransaction = fManager.beginTransaction();
-                    fTransaction.replace(R.id.content_frame, fragment);
-                    fTransaction.commit();
-                }
-                title = getString(R.string.title_activity_user_detail);
-                setTitle(title);
+                setTitle(getString(R.string.title_activity_user_detail));
                 break;
             case "cPers":
-                if (fragment == null) {
-                    fragment = FragmentChatPersonal.newInstance(_fData.get("fUId"));
-                    fTransaction = fManager.beginTransaction();
-                    fTransaction.replace(R.id.content_frame, fragment);
-                    fTransaction.commit();
-                }
-                title = getString(R.string.title_activity_personal_chat);
-                setTitle(title);
+                setTitle(getString(R.string.title_activity_personal_chat));
                 break;
             default:
                 break;
         }
 
+        Fragment fragment = null;
+        if (rest) {
+            fragment = fManager.findFragmentById(R.id.content_frame);
+        }
+        if (fragment == null) {
+            fTransaction = fManager.beginTransaction();
+            switch (_fId) {
+                case "Main":
+                    if (fMain == null) {
+                        fMain = FragmentMain.newInstance();
+                    }
+                    fTransaction.replace(R.id.content_frame, fMain);
+                    break;
+                case "uList":
+                    if (fUserList == null) {
+                        fUserList = FragmentUserList.newInstance();
+                    }
+                    fTransaction.replace(R.id.content_frame, fUserList);
+                    break;
+                case "uDet":
+                    if (fUserDetail == null) {
+                        fUserDetail = FragmentUserDetail.newInstance(_fData.get("fUId"));
+                    }
+                    fTransaction.replace(R.id.content_frame, fUserDetail);
+                    break;
+                case "cPers":
+                    if (fChatPersonal == null) {
+                        fChatPersonal = FragmentChatPersonal.newInstance(_fData.get("fUId"));
+                    }
+                    fTransaction.replace(R.id.content_frame, fChatPersonal);
+                    break;
+                default:
+                    break;
+            }
+            fTransaction.commit();
+        }
         navLayout.closeDrawer(navList);
     }
 
@@ -124,7 +131,7 @@ public class MainActivity extends ActionBarActivity
             _fData.put("fUId", fUId);
         }
 
-        fragmentLaunch(_fId, _fData);
+        fragmentLaunch(_fId, _fData, true);
     }
 
     @Override
@@ -140,13 +147,13 @@ public class MainActivity extends ActionBarActivity
     public void getUserDetail(String userId) {
         Map<String, String> _fData = new HashMap<String, String>();
         _fData.put("fUId", userId);
-        fragmentLaunch("uDet", _fData);
+        fragmentLaunch("uDet", _fData, false);
     }
 
     public void getChatPersonal(String userId) {
         Map<String, String> _fData = new HashMap<String, String>();
         _fData.put("fUId", userId);
-        fragmentLaunch("cPers", _fData);
+        fragmentLaunch("cPers", _fData, false);
     }
 
 
@@ -158,7 +165,7 @@ public class MainActivity extends ActionBarActivity
         cm = new CokModel(this);
         usr = cm.getUser();
         mList = cm.getMenu();
-        fManager = getSupportFragmentManager();
+        fManager = getFragmentManager();
 
         navLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         navList = (ListView) findViewById(R.id.left_drawer);
@@ -176,7 +183,7 @@ public class MainActivity extends ActionBarActivity
         navList.setClickable(true);
         navList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                fragmentLaunch(mList.get(position).key, null);
+                fragmentLaunch(mList.get(position).key, null, false);
             }
         });
 

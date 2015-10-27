@@ -2,14 +2,11 @@ package ru.igor_ok.cokandroid;
 
 import android.content.AsyncTaskLoader;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.AsyncTask;
 
 import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
@@ -24,22 +21,18 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 
-import android.support.annotation.NonNull;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 
 /**
@@ -89,16 +82,21 @@ public class CokModel {
         mList.add(mi);
     }
 
-    public Date getLastReqDate() {
+
+    /**
+     * @param _t type of the date (dtIfo - info about profile, dtUlist - last list of users)
+     * @return d date for requested type
+     */
+    public Date getDtInfo(String _t) {
         SharedPreferences userStorage;
         userStorage = mContext.getSharedPreferences("user", 0);
-        String lastReqDate = userStorage.getString("lastReqDate", null);
-        if (lastReqDate == null) {
+        String dtInfo = userStorage.getString(_t, null);
+        if (dtInfo == null) {
             return null;
         }
         Date d = null;
         try {
-            d = dFormat.parse(lastReqDate);
+            d = dFormat.parse(dtInfo);
         } catch (Exception e) {
             Exception ex = e;
             this.errToast(ex);
@@ -106,11 +104,15 @@ public class CokModel {
         return d;
     }
 
-    public void setLastReqDate(Date d) {
+    /**
+     * @param _t type of the date (dtIfo - info about profile, dtUlist - last list of users)
+     * @param d date of the last request for current type
+     */
+    public void setDtInfo(String _t, Date d) {
         String dStr = dFormat.format(d);
         SharedPreferences userStorage = mContext.getSharedPreferences("user", 0);
         SharedPreferences.Editor editor = userStorage.edit();
-        editor.putString("lastReqDate", dStr);
+        editor.putString(_t, dStr);
         editor.commit();
     }
 
@@ -260,5 +262,63 @@ class UserListLoader extends AsyncTaskLoader<Object> {
 
         return qwe;
     }
-
 }
+
+class UserDtLoader extends AsyncTaskLoader<Object> {
+    private Date d = null;
+    private DateFormat df = null;
+
+
+    private JSONObject qwe = new JSONObject();
+    private CokModel cm = null;
+    private String uId = null;
+    private String token = null;
+
+    public UserDtLoader(Context context) {
+        super(context);
+
+        cm = new CokModel(context);
+        Map<String, String> user = cm.getUser();
+        df = cm.dFormat;
+        uId = user.get("_id");
+        token = user.get("token");
+
+
+    }
+
+    @Override
+    public Object loadInBackground() {
+        JSONObject uParam = new JSONObject();
+        try {
+            uParam.put("uId", uId);
+            uParam.put("token", token);
+
+            JSONArray uArr = new JSONArray();
+            uArr.put(uParam);
+            JSONObject jsObj = cm.getJsObj("user.getUserUpdated", uArr);
+
+            String postRes = cm.POST(jsObj.toString());
+            JSONObject pR = new JSONObject(postRes);
+            JSONArray rA = pR.getJSONArray("result");
+            JSONArray uA = rA.getJSONArray(0);
+
+
+            /*try {
+                d = df.parse(dtInfo);
+            } catch (Exception e) {
+                Exception ex = e;
+                cm.errToast(ex);
+            }*/
+
+
+            qwe.put("users", uA);
+        } catch (Exception e) {
+            Log.e("User loader ", "" + e.getMessage());
+        }
+
+        return qwe;
+    }
+}
+
+
+//getUserUpdated

@@ -3,9 +3,9 @@ package ru.igor_ok.cokandroid;
 
 import android.app.Activity;
 import android.app.LoaderManager;
+import android.app.Fragment;
 import android.content.Loader;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -34,10 +34,8 @@ public class FragmentUserList extends Fragment
     private Map<String, String> usr;
     private String uId;
     private String token;
-    private View fView;
+    private View fView = null;
     private ListView userListView;
-    private UserListAdapter ulAdapter;
-
 
     protected CokModel cm;
     protected SqlHelper.UserOpenHelper sql;
@@ -47,7 +45,8 @@ public class FragmentUserList extends Fragment
 
     @Override
     public Loader<Object> onCreateLoader(int i, Bundle bundle) {
-        return new UserListLoader(activity);
+        Loader l = new UserListLoader(activity);
+        return l;
     }
 
     @Override
@@ -67,11 +66,8 @@ public class FragmentUserList extends Fragment
 
     private void renderUserList (Object result) {
         GsonBuilder builder = new GsonBuilder();
-
-
         builder.setPrettyPrinting().serializeNulls();
         Gson gson = builder.create();
-
         UserModel.UserList uRes = gson.fromJson(result.toString(), UserModel.UserList.class);
         adapter.addAll(uRes.users);
         userListView.setAdapter(adapter);
@@ -90,43 +86,41 @@ public class FragmentUserList extends Fragment
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setRetainInstance(true);
-
-        cm = new CokModel(activity);
-        sql = new SqlHelper().new UserOpenHelper(activity);
-        usr = cm.getUser();
-        uId = usr.get("_id");
-        token = usr.get("token");
-        adapter = new UserListAdapter(activity, R.layout.user_item);
-        LoaderManager lm = activity.getLoaderManager();
-
-        lm.initLoader(0, null, this);
-
-//        if (lm.getLoader(0) == null) {
-//            lm.initLoader(0, null, this);
-//        }
-//        else {
-//            lm.restartLoader(0, null, this);
-//        }
-
-
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         fView = inflater.inflate(R.layout.fragment_user_list, container, false);
         userListView = (ListView) fView.findViewById(R.id.userListView);
-
-        Loader l = activity.getLoaderManager().getLoader(0);
-        l.forceLoad();
         return fView;
+    }
+
+
+
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        setRetainInstance(true);
+
+        activity = getActivity();
+        cm = new CokModel(activity);
+        sql = new SqlHelper().new UserOpenHelper(activity);
+        usr = cm.getUser();
+        uId = usr.get("_id");
+        token = usr.get("token");
+        adapter = new UserListAdapter(activity, R.layout.user_item);
+
+        LoaderManager lm = activity.getLoaderManager();
+        Loader loader = lm.initLoader(0, null, this);
+        loader.forceLoad();
     }
 
 
     @Override
     public void onAttach(Activity _act) {
         super.onAttach(_act);
-        activity = _act;
+
         try {
             mListener = (OnUserListListener) activity;
         } catch (ClassCastException e) {
