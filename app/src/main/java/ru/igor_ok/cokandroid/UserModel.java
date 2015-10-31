@@ -27,7 +27,8 @@ public class UserModel {
     }
 
     public class UserList {
-        public List<UserItem> users = new ArrayList<UserItem>();
+        public List<UserItem> data = new ArrayList<UserItem>();
+        public Boolean act = false;
     }
 }
 

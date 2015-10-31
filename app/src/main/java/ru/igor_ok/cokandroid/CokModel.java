@@ -33,6 +33,8 @@ import java.util.Map;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 
 /**
@@ -87,21 +89,10 @@ public class CokModel {
      * @param _t type of the date (dtIfo - info about profile, dtUlist - last list of users)
      * @return d date for requested type
      */
-    public Date getDtInfo(String _t) {
+    public String getDtInfo(String _t) {
         SharedPreferences userStorage;
         userStorage = mContext.getSharedPreferences("user", 0);
-        String dtInfo = userStorage.getString(_t, null);
-        if (dtInfo == null) {
-            return null;
-        }
-        Date d = null;
-        try {
-            d = dFormat.parse(dtInfo);
-        } catch (Exception e) {
-            Exception ex = e;
-            this.errToast(ex);
-        }
-        return d;
+        return userStorage.getString(_t, null);
     }
 
     /**
@@ -223,16 +214,17 @@ public class CokModel {
 /**
  * get user list from http
  */
-class UserListLoader extends AsyncTaskLoader<Object> {
-    private JSONObject qwe = new JSONObject();
+class UserListLoader extends AsyncTaskLoader<List<UserModel.UserItem>> {
     private CokModel cm = null;
     private String uId = null;
     private String token = null;
+    private UserOpenHelper sh = null;
 
     public UserListLoader(Context context) {
         super(context);
 
         cm = new CokModel(context);
+        sh = new UserOpenHelper(context);
         Map<String, String> user = cm.getUser();
         uId = user.get("_id");
         token = user.get("token");
@@ -241,84 +233,42 @@ class UserListLoader extends AsyncTaskLoader<Object> {
     }
 
     @Override
-    public Object loadInBackground() {
+    public List<UserModel.UserItem> loadInBackground() {
         JSONObject uParam = new JSONObject();
         try {
             uParam.put("uId", uId);
             uParam.put("token", token);
+            uParam.put("date", cm.getDtInfo("dtUList"));
 
             JSONArray uArr = new JSONArray();
             uArr.put(uParam);
-            JSONObject jsObj = cm.getJsObj("user.getUserList", uArr);
+            JSONObject jsObj = cm.getJsObj("user.getMobileUserList", uArr);
 
             String postRes = cm.POST(jsObj.toString());
             JSONObject pR = new JSONObject(postRes);
             JSONArray rA = pR.getJSONArray("result");
-            JSONArray uA = rA.getJSONArray(0);
-            qwe.put("users", uA);
+            JSONObject resObj = rA.getJSONObject(0);
+
+            GsonBuilder builder = new GsonBuilder();
+            builder.setPrettyPrinting().serializeNulls();
+            Gson gson = builder.create();
+            UserModel.UserList ul = gson.fromJson(resObj.toString(), UserModel.UserList.class);
+
+
+            if (! ul.act) {
+                sh.uDrop();
+                sh.uInsert(ul.data);
+                cm.setDtInfo("dtUList", new Date());
+            }
         } catch (Exception e) {
             Log.e("User loader ", "" + e.getMessage());
+            cm.errToast(e);
         }
 
-        return qwe;
+        return sh.uGetAll();
     }
 }
 
-class UserDtLoader extends AsyncTaskLoader<Object> {
-    private Date d = null;
-    private DateFormat df = null;
-
-
-    private JSONObject qwe = new JSONObject();
-    private CokModel cm = null;
-    private String uId = null;
-    private String token = null;
-
-    public UserDtLoader(Context context) {
-        super(context);
-
-        cm = new CokModel(context);
-        Map<String, String> user = cm.getUser();
-        df = cm.dFormat;
-        uId = user.get("_id");
-        token = user.get("token");
-
-
-    }
-
-    @Override
-    public Object loadInBackground() {
-        JSONObject uParam = new JSONObject();
-        try {
-            uParam.put("uId", uId);
-            uParam.put("token", token);
-
-            JSONArray uArr = new JSONArray();
-            uArr.put(uParam);
-            JSONObject jsObj = cm.getJsObj("user.getUserUpdated", uArr);
-
-            String postRes = cm.POST(jsObj.toString());
-            JSONObject pR = new JSONObject(postRes);
-            JSONArray rA = pR.getJSONArray("result");
-            JSONArray uA = rA.getJSONArray(0);
-
-
-            /*try {
-                d = df.parse(dtInfo);
-            } catch (Exception e) {
-                Exception ex = e;
-                cm.errToast(ex);
-            }*/
-
-
-            qwe.put("users", uA);
-        } catch (Exception e) {
-            Log.e("User loader ", "" + e.getMessage());
-        }
-
-        return qwe;
-    }
-}
 
 
 //getUserUpdated

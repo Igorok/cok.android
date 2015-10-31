@@ -16,12 +16,13 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 
+import java.util.List;
 import java.util.Map;
 
 
 
 public class FragmentUserList extends Fragment
-    implements LoaderManager.LoaderCallbacks<Object>
+    implements LoaderManager.LoaderCallbacks<List<UserModel.UserItem>>
 {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -38,40 +39,29 @@ public class FragmentUserList extends Fragment
     private ListView userListView;
 
     protected CokModel cm;
-    protected SqlHelper.UserOpenHelper sql;
     protected UserListAdapter adapter;
     private Activity activity;
 
 
     @Override
-    public Loader<Object> onCreateLoader(int i, Bundle bundle) {
+    public Loader<List<UserModel.UserItem>> onCreateLoader(int i, Bundle bundle) {
         Loader l = new UserListLoader(activity);
         return l;
     }
 
     @Override
-    public void onLoadFinished(Loader<Object> loader, Object result) {
+    public void onLoadFinished(Loader<List<UserModel.UserItem>> loader, List<UserModel.UserItem> userItems) {
         Integer lId = loader.getId();
-        renderUserList(result);
+        adapter.addAll(userItems);
+        userListView.setAdapter(adapter);
     }
 
+
     @Override
-    public void onLoaderReset(Loader<Object> loader) {
+    public void onLoaderReset(Loader<List<UserModel.UserItem>> loader) {
         Log.e("Loader reset", "user list");
     }
 
-
-
-
-
-    private void renderUserList (Object result) {
-        GsonBuilder builder = new GsonBuilder();
-        builder.setPrettyPrinting().serializeNulls();
-        Gson gson = builder.create();
-        UserModel.UserList uRes = gson.fromJson(result.toString(), UserModel.UserList.class);
-        adapter.addAll(uRes.users);
-        userListView.setAdapter(adapter);
-    }
 
     public static FragmentUserList newInstance() {
         FragmentUserList fragment = new FragmentUserList();
@@ -105,7 +95,6 @@ public class FragmentUserList extends Fragment
 
         activity = getActivity();
         cm = new CokModel(activity);
-        sql = new SqlHelper().new UserOpenHelper(activity);
         usr = cm.getUser();
         uId = usr.get("_id");
         token = usr.get("token");
