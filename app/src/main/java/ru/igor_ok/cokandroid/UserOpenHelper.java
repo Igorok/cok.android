@@ -75,8 +75,35 @@ public class UserOpenHelper extends SQLiteOpenHelper {
                 ul.add(ui);
             } while (cursor.moveToNext());
         }
+        cursor.close();
 
         // return contact list
         return ul;
+    }
+
+    /**
+     *
+     * @param _id of user
+     * @return UserItem detail info about user
+     */
+    public UserModel.UserItem uGetOne (String _id) {
+        UserModel.UserItem ui = null;
+        String selectQuery = "SELECT  * FROM " + USER_TABLE_NAME + " where _id = '" + _id + "';";
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+        Integer count = cursor.getCount();
+        if (count > 0) {
+            cursor.moveToFirst();
+            ui = new UserModel().new UserItem();
+            ui._id = cursor.getString(0);
+            ui.login = cursor.getString(1);
+            ui.email = cursor.getString(2);
+            ui.friend = cursor.getInt(3);
+        }
+
+        cursor.close();
+        // return contact list
+        return ui;
     }
 }

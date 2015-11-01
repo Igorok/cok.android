@@ -39,7 +39,6 @@ public class FragmentUserList extends Fragment
     private ListView userListView;
 
     protected CokModel cm;
-    protected UserListAdapter adapter;
     private Activity activity;
 
 
@@ -52,6 +51,9 @@ public class FragmentUserList extends Fragment
     @Override
     public void onLoadFinished(Loader<List<UserModel.UserItem>> loader, List<UserModel.UserItem> userItems) {
         Integer lId = loader.getId();
+
+
+        UserListAdapter adapter = new UserListAdapter(activity, R.layout.user_item);
         adapter.addAll(userItems);
         userListView.setAdapter(adapter);
     }
@@ -98,7 +100,6 @@ public class FragmentUserList extends Fragment
         usr = cm.getUser();
         uId = usr.get("_id");
         token = usr.get("token");
-        adapter = new UserListAdapter(activity, R.layout.user_item);
 
         LoaderManager lm = activity.getLoaderManager();
         Loader loader = lm.initLoader(0, null, this);

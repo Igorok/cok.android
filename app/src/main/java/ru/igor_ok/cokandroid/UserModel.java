@@ -1,7 +1,6 @@
 package ru.igor_ok.cokandroid;
 
 import android.content.Context;
-import android.provider.BaseColumns;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,9 +9,7 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by igor on 26.07.15.
@@ -64,7 +61,8 @@ class UserListAdapter extends ArrayAdapter<UserModel.UserItem> {
                 @Override
                 public void onClick(View cView) {
                     if(mContext instanceof MainActivity){
-                        ((MainActivity)mContext).getUserDetail(item._id);
+                        String _id = item._id;
+                        ((MainActivity)mContext).getUserDetail(_id);
                     }
                 }
             });

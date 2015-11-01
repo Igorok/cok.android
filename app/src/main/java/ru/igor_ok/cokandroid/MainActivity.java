@@ -85,37 +85,56 @@ public class MainActivity extends ActionBarActivity
         if (rest) {
             fragment = fManager.findFragmentById(R.id.content_frame);
         }
+
+
+
+
+
+
+
+
+
         if (fragment == null) {
             fTransaction = fManager.beginTransaction();
             switch (_fId) {
                 case "Main":
+                    fMain = (FragmentMain) getFragmentManager().findFragmentByTag(_fId);
                     if (fMain == null) {
                         fMain = FragmentMain.newInstance();
                     }
-                    fTransaction.replace(R.id.content_frame, fMain);
+                    fTransaction.replace(R.id.content_frame, fMain, _fId);
                     break;
                 case "uList":
+                    fUserList = (FragmentUserList) getFragmentManager().findFragmentByTag(_fId);
                     if (fUserList == null) {
                         fUserList = FragmentUserList.newInstance();
                     }
-                    fTransaction.replace(R.id.content_frame, fUserList);
+                    fTransaction.replace(R.id.content_frame, fUserList, _fId);
                     break;
                 case "uDet":
+                    fUserDetail = (FragmentUserDetail) getFragmentManager().findFragmentByTag(_fId);
+                    Bundle arg = new Bundle();
+                    arg.putString("userId", _fData.get("fUId"));
                     if (fUserDetail == null) {
                         fUserDetail = FragmentUserDetail.newInstance(_fData.get("fUId"));
+                    } else {
+                        fUserDetail.setArguments(arg);
                     }
-                    fTransaction.replace(R.id.content_frame, fUserDetail);
+                    fTransaction.replace(R.id.content_frame, fUserDetail, _fId);
                     break;
                 case "cPers":
+                    fChatPersonal = (FragmentChatPersonal) getFragmentManager().findFragmentByTag(_fId);
                     if (fChatPersonal == null) {
                         fChatPersonal = FragmentChatPersonal.newInstance(_fData.get("fUId"));
                     }
-                    fTransaction.replace(R.id.content_frame, fChatPersonal);
+                    fTransaction.replace(R.id.content_frame, fChatPersonal, _fId);
                     break;
                 default:
                     break;
             }
-            fTransaction.commit();
+            fTransaction
+                .addToBackStack(_fId)
+                .commit();
         }
         navLayout.closeDrawer(navList);
     }
@@ -160,6 +179,7 @@ public class MainActivity extends ActionBarActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
 
         cm = new CokModel(this);
