@@ -11,13 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
-
 import java.util.List;
-import java.util.Map;
 
 
 
@@ -26,19 +20,13 @@ public class FragmentUserList extends Fragment
 {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_UID= "param1";
-    private static final String ARG_TOKEN = "param2";
+//    private static final String ARG_UID= "param1";
+//    private static final String ARG_TOKEN = "param2";
 
-    private OnUserListListener mListener;
 
     // TODO: Rename and change types of parameters
-    private Map<String, String> usr;
-    private String uId;
-    private String token;
     private View fView = null;
     private ListView userListView;
-
-    protected CokModel cm;
     private Activity activity;
 
 
@@ -50,9 +38,6 @@ public class FragmentUserList extends Fragment
 
     @Override
     public void onLoadFinished(Loader<List<UserModel.UserItem>> loader, List<UserModel.UserItem> userItems) {
-        Integer lId = loader.getId();
-
-
         UserListAdapter adapter = new UserListAdapter(activity, R.layout.user_item);
         adapter.addAll(userItems);
         userListView.setAdapter(adapter);
@@ -83,7 +68,6 @@ public class FragmentUserList extends Fragment
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         fView = inflater.inflate(R.layout.fragment_user_list, container, false);
-        userListView = (ListView) fView.findViewById(R.id.userListView);
         return fView;
     }
 
@@ -96,10 +80,7 @@ public class FragmentUserList extends Fragment
         setRetainInstance(true);
 
         activity = getActivity();
-        cm = new CokModel(activity);
-        usr = cm.getUser();
-        uId = usr.get("_id");
-        token = usr.get("token");
+        userListView = (ListView) fView.findViewById(R.id.userListView);
 
         LoaderManager lm = activity.getLoaderManager();
         Loader loader = lm.initLoader(0, null, this);
@@ -110,23 +91,10 @@ public class FragmentUserList extends Fragment
     @Override
     public void onAttach(Activity _act) {
         super.onAttach(_act);
-
-        try {
-            mListener = (OnUserListListener) activity;
-        } catch (ClassCastException e) {
-            Exception ex = e;
-            Log.e("onAttach ", "" + ex.getMessage().toString());
-        }
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
-        mListener = null;
-    }
-
-    public interface OnUserListListener {
-        // TODO: Update argument type and name
-        public void getUserDetail(String userId);
     }
 }

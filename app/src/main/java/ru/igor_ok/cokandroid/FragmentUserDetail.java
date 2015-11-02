@@ -61,6 +61,11 @@ public class FragmentUserDetail extends Fragment {
         return fView;
     }
 
+    public void setUserId(String _id) {
+        Bundle a = getArguments();
+        a.putString(ARG_USR_ID, _id);
+    }
+
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
@@ -79,6 +84,8 @@ public class FragmentUserDetail extends Fragment {
 
 
     }
+
+
 
     @Override
     public void onAttach(Activity activity) {

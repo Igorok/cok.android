@@ -24,7 +24,6 @@ import java.util.Map;
 
 public class MainActivity extends ActionBarActivity
     implements FragmentMain.OnFragmentInteractionListener,
-        FragmentUserList.OnUserListListener,
         FragmentUserDetail.OnUserDetailListener,
         FragmentChatPersonal.OnChatPersListener
 {
@@ -35,7 +34,6 @@ public class MainActivity extends ActionBarActivity
 
 
     private FragmentManager fManager;
-    private android.app.FragmentTransaction fTransaction;
 
     private DrawerLayout navLayout;
     private ListView navList;
@@ -51,8 +49,90 @@ public class MainActivity extends ActionBarActivity
     private FragmentUserDetail fUserDetail = null;
     private FragmentChatPersonal fChatPersonal = null;
 
-
     private void fragmentLaunch(String _fId, Map<String, String> _fData, Boolean rest) {
+        SharedPreferences fStorage = getSharedPreferences("fragment", 0);
+        SharedPreferences.Editor editor = fStorage.edit();
+        editor.putString("fId", _fId);
+        if (_fData != null) {
+            for (String s : _fData.keySet()) {
+                String key = s;
+                String value = _fData.get(key);
+                editor.putString(key, value);
+            }
+        }
+        editor.commit();
+
+
+        Fragment fragment = fManager.findFragmentById(R.id.content_frame);
+
+        try {
+//            if (fManager.findFragmentById(R.id.content_frame) != null) {
+//                getFragmentManager()
+//                    .beginTransaction()
+//                    .remove(fragment)
+//                    .commit();
+//            }
+
+            switch (_fId) {
+                case "Main":
+                    if (fMain == null) {
+                        fMain = FragmentMain.newInstance();
+                    }
+                    setTitle(getString(R.string.title_activity_main));
+                    getFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.content_frame, fMain)
+                        .addToBackStack(null)
+                        .commit();
+                    break;
+                case "uList":
+                    if (fUserList == null) {
+                        fUserList = FragmentUserList.newInstance();
+                    }
+                    setTitle(getString(R.string.title_activity_user_list));
+                    getFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.content_frame, fUserList)
+                        .addToBackStack(null)
+                        .commit();
+                    break;
+                case "uDet":
+
+                    if (fUserDetail == null) {
+                        fUserDetail = FragmentUserDetail.newInstance(_fData.get("fUId"));
+                    } else {
+                        fUserDetail.setUserId(_fData.get("fUId"));
+                    }
+                    setTitle(getString(R.string.title_activity_user_detail));
+                    getFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.content_frame, fUserDetail)
+                        .addToBackStack(null)
+                        .commit();
+                    break;
+                case "cPers":
+                    if (fChatPersonal == null) {
+                        fChatPersonal = FragmentChatPersonal.newInstance(_fData.get("fUId"));
+                    }
+                    setTitle(getString(R.string.title_activity_personal_chat));
+                    getFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.content_frame, fChatPersonal)
+                        .addToBackStack(null)
+                        .commit();
+                    break;
+                default:
+                    break;
+            }
+        } catch (Exception e) {
+            Exception ex = e;
+            cm.errToast(ex);
+        }
+
+        navLayout.closeDrawer(navList);
+    }
+
+    /*private void fragmentLaunch(String _fId, Map<String, String> _fData, Boolean rest) {
         SharedPreferences fStorage = getSharedPreferences("fragment", 0);
         SharedPreferences.Editor editor = fStorage.edit();
         editor.putString("fId", _fId);
@@ -93,51 +173,52 @@ public class MainActivity extends ActionBarActivity
 
 
 
-
-        if (fragment == null) {
-            fTransaction = fManager.beginTransaction();
-            switch (_fId) {
-                case "Main":
-                    fMain = (FragmentMain) getFragmentManager().findFragmentByTag(_fId);
-                    if (fMain == null) {
-                        fMain = FragmentMain.newInstance();
-                    }
-                    fTransaction.replace(R.id.content_frame, fMain, _fId);
-                    break;
-                case "uList":
-                    fUserList = (FragmentUserList) getFragmentManager().findFragmentByTag(_fId);
-                    if (fUserList == null) {
-                        fUserList = FragmentUserList.newInstance();
-                    }
-                    fTransaction.replace(R.id.content_frame, fUserList, _fId);
-                    break;
-                case "uDet":
-                    fUserDetail = (FragmentUserDetail) getFragmentManager().findFragmentByTag(_fId);
-                    Bundle arg = new Bundle();
-                    arg.putString("userId", _fData.get("fUId"));
-                    if (fUserDetail == null) {
-                        fUserDetail = FragmentUserDetail.newInstance(_fData.get("fUId"));
-                    } else {
-                        fUserDetail.setArguments(arg);
-                    }
-                    fTransaction.replace(R.id.content_frame, fUserDetail, _fId);
-                    break;
-                case "cPers":
-                    fChatPersonal = (FragmentChatPersonal) getFragmentManager().findFragmentByTag(_fId);
-                    if (fChatPersonal == null) {
-                        fChatPersonal = FragmentChatPersonal.newInstance(_fData.get("fUId"));
-                    }
-                    fTransaction.replace(R.id.content_frame, fChatPersonal, _fId);
-                    break;
-                default:
-                    break;
+        try {
+            if (fragment == null) {
+                fTransaction = fManager.beginTransaction();
+                switch (_fId) {
+                    case "Main":
+                        if (fMain == null) {
+                            fMain = FragmentMain.newInstance();
+                        }
+                        fTransaction.replace(R.id.content_frame, fMain, _fId);
+                        break;
+                    case "uList":
+                        if (fUserList == null) {
+                            fUserList = FragmentUserList.newInstance();
+                        }
+                        fTransaction.replace(R.id.content_frame, fUserList, _fId);
+                        break;
+                    case "uDet":
+                        Bundle arg = new Bundle();
+                        arg.putString("userId", _fData.get("fUId"));
+                        if (fUserDetail == null) {
+                            fUserDetail = FragmentUserDetail.newInstance(_fData.get("fUId"));
+                        } else {
+                            fUserDetail.setArguments(arg);
+                        }
+                        fTransaction.replace(R.id.content_frame, fUserDetail, _fId);
+                        break;
+                    case "cPers":
+                        if (fChatPersonal == null) {
+                            fChatPersonal = FragmentChatPersonal.newInstance(_fData.get("fUId"));
+                        }
+                        fTransaction.replace(R.id.content_frame, fChatPersonal, _fId);
+                        break;
+                    default:
+                        break;
+                }
+                fTransaction
+                        .addToBackStack(_fId)
+                        .commit();
             }
-            fTransaction
-                .addToBackStack(_fId)
-                .commit();
+        } catch (Exception e) {
+            Exception ex = e;
+            cm.errToast(ex);
         }
+
         navLayout.closeDrawer(navList);
-    }
+    }*/
 
     private void fragmentRestore () {
         SharedPreferences fStorage;
