@@ -42,24 +42,25 @@ public class FragmentMain extends Fragment {
         if (mListener != null) {
             mListener.setTitle("Profile " + login);
         }
+
+    }
+
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        setRetainInstance(true);
+        super.onActivityCreated(savedInstanceState);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
-
-        // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_main, container, false);
+
         TextView user_name = (TextView) v.findViewById(R.id.user_name);
         TextView user_email = (TextView) v.findViewById(R.id.user_email);
 
         user_name.setText(login);
         user_email.setText(email);
-
-
-//        int duration = Toast.LENGTH_SHORT;
-//        Toast toast = Toast.makeText(getActivity(), login, duration);
-//        toast.show();
         return v;
     }
 

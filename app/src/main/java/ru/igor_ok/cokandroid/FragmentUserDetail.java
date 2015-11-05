@@ -68,8 +68,8 @@ public class FragmentUserDetail extends Fragment {
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
         setRetainInstance(true);
+        super.onActivityCreated(savedInstanceState);
 
         userId = getArguments().getString(ARG_USR_ID);
         uSql = new UserOpenHelper(getActivity());

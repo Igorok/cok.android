@@ -27,18 +27,17 @@ public class FragmentUserList extends Fragment
     // TODO: Rename and change types of parameters
     private View fView = null;
     private ListView userListView;
-    private Activity activity;
 
 
     @Override
     public Loader<List<UserModel.UserItem>> onCreateLoader(int i, Bundle bundle) {
-        Loader l = new UserListLoader(activity);
+        Loader l = new UserListLoader(getActivity());
         return l;
     }
 
     @Override
     public void onLoadFinished(Loader<List<UserModel.UserItem>> loader, List<UserModel.UserItem> userItems) {
-        UserListAdapter adapter = new UserListAdapter(activity, R.layout.user_item);
+        UserListAdapter adapter = new UserListAdapter(getActivity(), R.layout.user_item);
         adapter.addAll(userItems);
         userListView.setAdapter(adapter);
     }
@@ -63,6 +62,7 @@ public class FragmentUserList extends Fragment
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setRetainInstance(true);
     }
 
     @Override
@@ -76,16 +76,23 @@ public class FragmentUserList extends Fragment
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
         setRetainInstance(true);
+        super.onActivityCreated(savedInstanceState);
 
-        activity = getActivity();
         userListView = (ListView) fView.findViewById(R.id.userListView);
 
-        LoaderManager lm = activity.getLoaderManager();
-        Loader loader = lm.initLoader(0, null, this);
-        loader.forceLoad();
+        LoaderManager lm = getActivity().getLoaderManager();
+        Loader loader = lm.getLoader(0);
+        if( loader == null ) {
+            loader = lm.initLoader(0, null, this);
+            loader.forceLoad();
+        }
+        else {
+            lm.restartLoader(0, null, this).forceLoad();
+        }
     }
+
+
 
 
     @Override
@@ -96,5 +103,9 @@ public class FragmentUserList extends Fragment
     @Override
     public void onDetach() {
         super.onDetach();
+        Loader l = getActivity().getLoaderManager().getLoader(0);
+        if (l != null) {
+            getActivity().getLoaderManager().destroyLoader(0);
+        }
     }
 }
