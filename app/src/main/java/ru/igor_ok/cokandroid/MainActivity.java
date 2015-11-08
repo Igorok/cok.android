@@ -92,7 +92,7 @@ public class MainActivity extends ActionBarActivity
                 if (fUserList == null) {
                     fUserList = FragmentUserList.newInstance();
                 }
-                getFragmentManager()
+                fManager
                         .beginTransaction()
                         .replace(R.id.content_frame, fUserList, _fId)
                         .addToBackStack(_fId)
@@ -107,7 +107,7 @@ public class MainActivity extends ActionBarActivity
                 } else {
                     fUserDetail.setUserId(_fData.get("fUId"));
                 }
-                getFragmentManager()
+                fManager
                         .beginTransaction()
                         .replace(R.id.content_frame, fUserDetail, _fId)
                         .addToBackStack(_fId)
@@ -120,7 +120,7 @@ public class MainActivity extends ActionBarActivity
                 if (fChatPersonal == null) {
                     fChatPersonal = FragmentChatPersonal.newInstance(_fData.get("fUId"));
                 }
-                getFragmentManager()
+                fManager
                         .beginTransaction()
                         .replace(R.id.content_frame, fChatPersonal, _fId)
                         .addToBackStack(_fId)
@@ -268,7 +268,6 @@ public class MainActivity extends ActionBarActivity
         cm = new CokModel(this);
         usr = cm.getUser();
         mList = cm.getMenu();
-        fManager = getFragmentManager();
 
         navLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         navList = (ListView) findViewById(R.id.left_drawer);

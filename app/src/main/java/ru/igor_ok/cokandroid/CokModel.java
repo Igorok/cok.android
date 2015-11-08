@@ -218,17 +218,15 @@ class UserListLoader extends AsyncTaskLoader<List<UserModel.UserItem>> {
     private String uId = null;
     private String token = null;
     private UserOpenHelper sh = null;
-
     public UserListLoader(Context context) {
         super(context);
-
         cm = new CokModel(context);
         sh = new UserOpenHelper(context);
         Map<String, String> user = cm.getUser();
         uId = user.get("_id");
         token = user.get("token");
 
-
+        onContentChanged();
     }
 
     @Override
@@ -265,6 +263,46 @@ class UserListLoader extends AsyncTaskLoader<List<UserModel.UserItem>> {
         }
 
         return sh.uGetAll();
+    }
+
+
+    /**
+     * Called when there is new data to deliver to the client.  The
+     * super class will take care of delivering it; the implementation
+     * here just adds a little more logic.
+     */
+    @Override public void deliverResult(List<UserModel.UserItem> ul) {
+        Boolean start = isStarted();
+        Boolean reset = isReset();
+        Boolean abadon = isAbandoned();
+        if (start) {
+            super.deliverResult(ul);
+        }
+    }
+
+    /**
+     * Handles a request to stop the Loader.
+     */
+    @Override protected void onStopLoading() {
+        cancelLoad();
+    }
+
+    /**
+     * Handles a request to cancel a load.
+     */
+    @Override public void onCanceled(List<UserModel.UserItem> ul) {
+        super.onCanceled(ul);
+
+    }
+
+    /**
+     * Handles a request to completely reset the Loader.
+     */
+    @Override protected void onReset() {
+        super.onReset();
+
+        // Ensure the loader is stopped
+        onStopLoading();
     }
 }
 

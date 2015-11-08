@@ -5,48 +5,36 @@ import android.app.Activity;
 import android.app.LoaderManager;
 import android.app.Fragment;
 import android.content.Loader;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
-import java.util.List;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 
 public class FragmentUserList extends Fragment
-    implements LoaderManager.LoaderCallbacks<List<UserModel.UserItem>>
 {
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-//    private static final String ARG_UID= "param1";
-//    private static final String ARG_TOKEN = "param2";
-
 
     // TODO: Rename and change types of parameters
     private View fView = null;
     private ListView userListView;
+    private CokModel cm;
+    private UserOpenHelper sh;
+    private String uId;
+    private String token;
 
-
-    @Override
-    public Loader<List<UserModel.UserItem>> onCreateLoader(int i, Bundle bundle) {
-        Loader l = new UserListLoader(getActivity());
-        return l;
-    }
-
-    @Override
-    public void onLoadFinished(Loader<List<UserModel.UserItem>> loader, List<UserModel.UserItem> userItems) {
-        UserListAdapter adapter = new UserListAdapter(getActivity(), R.layout.user_item);
-        adapter.addAll(userItems);
-        userListView.setAdapter(adapter);
-    }
-
-
-    @Override
-    public void onLoaderReset(Loader<List<UserModel.UserItem>> loader) {
-        Log.e("Loader reset", "user list");
-    }
 
 
     public static FragmentUserList newInstance() {
@@ -72,7 +60,59 @@ public class FragmentUserList extends Fragment
     }
 
 
+    protected class GetUsers extends AsyncTask<Void, Void, Object> {
+        @Override
+        protected Object doInBackground (Void... params) {
+            try {
+                JSONObject uParam = new JSONObject();
+                try {
+                    uParam.put("uId", uId);
+                    uParam.put("token", token);
+                    uParam.put("date", cm.getDtInfo("dtUList"));
 
+                    JSONArray uArr = new JSONArray();
+                    uArr.put(uParam);
+                    JSONObject jsObj = cm.getJsObj("user.getMobileUserList", uArr);
+
+                    String postRes = cm.POST(jsObj.toString());
+                    JSONObject pR = new JSONObject(postRes);
+                    JSONArray rA = pR.getJSONArray("result");
+                    JSONObject resObj = rA.getJSONObject(0);
+
+                    GsonBuilder builder = new GsonBuilder();
+                    builder.setPrettyPrinting().serializeNulls();
+                    Gson gson = builder.create();
+                    UserModel.UserList ul = gson.fromJson(resObj.toString(), UserModel.UserList.class);
+
+
+                    if (! ul.act) {
+                        sh.uDrop();
+                        sh.uInsert(ul.data);
+                        cm.setDtInfo("dtUList", new Date());
+                    }
+                } catch (Exception e) {
+                    cm.errToast(e);
+                }
+
+                return sh.uGetAll();
+            } catch (Exception e) {
+                Log.e("post exception ", "" + e.getMessage());
+                return e;
+            }
+        }
+        @Override
+        protected void onPostExecute(Object result) {
+
+            if (result instanceof Exception) {
+                cm.errToast((Exception) result);
+            }
+            else {
+                UserListAdapter adapter = new UserListAdapter(getActivity(), R.layout.user_item);
+                adapter.addAll((List<UserModel.UserItem>) result);
+                userListView.setAdapter(adapter);
+            }
+        }
+    }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
@@ -81,15 +121,14 @@ public class FragmentUserList extends Fragment
 
         userListView = (ListView) fView.findViewById(R.id.userListView);
 
-        LoaderManager lm = getActivity().getLoaderManager();
-        Loader loader = lm.getLoader(0);
-        if( loader == null ) {
-            loader = lm.initLoader(0, null, this);
-            loader.forceLoad();
-        }
-        else {
-            lm.restartLoader(0, null, this).forceLoad();
-        }
+        Activity act = FragmentUserList.this.getActivity();
+        cm = new CokModel(act.getApplicationContext());
+        sh = new UserOpenHelper(act.getApplicationContext());
+        Map<String, String> user = cm.getUser();
+        uId = user.get("_id");
+        token = user.get("token");
+
+        new GetUsers().execute();
     }
 
 
@@ -103,9 +142,5 @@ public class FragmentUserList extends Fragment
     @Override
     public void onDetach() {
         super.onDetach();
-        Loader l = getActivity().getLoaderManager().getLoader(0);
-        if (l != null) {
-            getActivity().getLoaderManager().destroyLoader(0);
-        }
     }
 }
