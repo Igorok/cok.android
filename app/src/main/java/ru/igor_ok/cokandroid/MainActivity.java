@@ -119,6 +119,8 @@ public class MainActivity extends ActionBarActivity
                 FragmentChatPersonal fChatPersonal = (FragmentChatPersonal) fManager.findFragmentByTag(_fId);
                 if (fChatPersonal == null) {
                     fChatPersonal = FragmentChatPersonal.newInstance(_fData.get("fUId"));
+                } else {
+                    fChatPersonal.setUserId(_fData.get("fUId"));
                 }
                 fManager
                         .beginTransaction()

@@ -151,25 +151,37 @@ public class FragmentChatPersonal extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        fView = inflater.inflate(R.layout.fragment_chat_personal, container, false);
+        lv = (ListView) fView.findViewById(R.id.msgListView);
+        sendBtn = (ImageButton) fView.findViewById(R.id.send_button);
+        sendText = (EditText) fView.findViewById(R.id.send_text);
+        return fView;
+    }
+
+    public void setUserId(String _id) {
+        Bundle a = getArguments();
+        a.putString(ARG_PID, _id);
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
         setRetainInstance(true);
+        super.onActivityCreated(savedInstanceState);
 
         if (getArguments() != null) {
             pId = getArguments().getString(ARG_PID);
         }
-        mActivity = getActivity();
+        mActivity = FragmentChatPersonal.this.getActivity();
         cm = new CokModel(mActivity);
         Map<String, String> usr = cm.getUser();
         token = usr.get("token");
         uId = usr.get("_id");
         uLogin = usr.get("login");
-    }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        fView = inflater.inflate(R.layout.fragment_chat_personal, container, false);
-        lv = (ListView) fView.findViewById(R.id.msgListView);
-        sendBtn = (ImageButton) fView.findViewById(R.id.send_button);
         sendBtn.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 try {
@@ -181,58 +193,69 @@ public class FragmentChatPersonal extends Fragment {
             }
         });
 
-        sendText = (EditText) fView.findViewById(R.id.send_text);
-
 
         socketio = mActivity.getString(R.string.socketio);
-        {
-            try {
-                mSocket = IO.socket(socketio);
-            } catch (Exception e) {
-                Exception ex = e;
-                Log.e("socketio ", "" + ex.getMessage());
-                cm.errToast(ex);
-            }
-        }
-
-
-
-        mSocket.on("joinPersonal", joinPersonal);
-        mSocket.on("message", getMessage);
-        mSocket.connect();
-
-        JSONObject jData = new JSONObject();
-        try {
-            jData.put("uId", uId);
-            jData.put("token", token);
-            jData.put("personId", pId);
-        } catch (JSONException e) {
-            Exception ex = e;
-            cm.errToast(ex);
-        }
-        mSocket.emit("joinPersonal", jData);
-        return fView;
     }
+
+
 
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
+    }
+
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
         try {
-            mListener = (OnChatPersListener) activity;
-        } catch (ClassCastException e) {
+            if (mListener == null) {
+                mListener = (OnChatPersListener) mActivity;
+            }
+            if (mSocket == null) {
+                mSocket = IO.socket(socketio);
+                mSocket.on("joinPersonal", joinPersonal);
+                mSocket.on("message", getMessage);
+                mSocket.connect();
+            }
+
+
+
+
+
+            JSONObject jData = new JSONObject();
+            jData.put("uId", uId);
+            jData.put("token", token);
+            jData.put("personId", pId);
+            jData.put("limit", 100)
+            ;
+            mSocket.emit("joinPersonal", jData);
+        } catch (Exception e) {
             Exception ex = e;
-            Log.e("onAttach ", "" + ex.getMessage().toString());
+            Log.e("socketio ", "" + ex.getMessage());
+            cm.errToast(ex);
         }
     }
+
+
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        mSocket.off("message", getMessage);
+        mSocket.off("joinPersonal", joinPersonal);
+        mSocket.disconnect();
+
+        mListener = null;
+        mSocket = null;
+    }
+
 
     @Override
     public void onDetach() {
         super.onDetach();
-        mSocket.disconnect();
-        mSocket.off("message", getMessage);
-        mSocket.off("joinPersonal", joinPersonal);
-
-        mListener = null;
     }
     public interface OnChatPersListener {
         public void setTitle(String title);
