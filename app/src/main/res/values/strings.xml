@@ -12,6 +12,8 @@
     <string name="title_activity_main">Profile</string>
     <string name="title_activity_user_list">Users</string>
     <string name="title_activity_user_detail">User</string>
+    <string name="title_activity_friend_list">Friends</string>
+    <string name="title_activity_friend_detail">User</string>
     <string name="title_activity_personal_chat">Chat</string>
     <string name="title_activity_group_chat">Chat room</string>
 

@@ -73,3 +73,48 @@ class UserListAdapter extends ArrayAdapter<UserModel.UserItem> {
         }
     }
 }
+
+
+class FriendListAdapter extends ArrayAdapter<UserModel.UserItem> {
+    private int layoutResourceId;
+    private Context mContext;
+    public FriendListAdapter(Context context, int textViewResourceId) {
+        super(context, textViewResourceId);
+        mContext = context;
+        layoutResourceId = textViewResourceId;
+    }
+
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent) {
+        try {
+            final UserModel.UserItem item = getItem(position);
+            View v = null;
+            if (convertView == null) {
+                LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                v = inflater.inflate(layoutResourceId, null);
+            } else {
+                v = convertView;
+            }
+
+            TextView header = (TextView) v.findViewById(R.id.uLogin);
+            TextView description = (TextView) v.findViewById(R.id.uEmail);
+
+            header.setText(item.login);
+            description.setText(item.email);
+
+            v.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View cView) {
+                    if(mContext instanceof MainActivity){
+                        String _id = item._id;
+                        ((MainActivity)mContext).getFriendDetail(_id);
+                    }
+                }
+            });
+            return v;
+        } catch (Exception ex) {
+            Log.e("adapter exception ", "" + ex.getMessage());
+            return null;
+        }
+    }
+}

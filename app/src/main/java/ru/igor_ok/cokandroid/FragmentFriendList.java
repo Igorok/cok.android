@@ -2,9 +2,7 @@ package ru.igor_ok.cokandroid;
 
 
 import android.app.Activity;
-import android.app.LoaderManager;
 import android.app.Fragment;
-import android.content.Loader;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -24,25 +22,25 @@ import java.util.List;
 import java.util.Map;
 
 
-public class FragmentUserList extends Fragment
+public class FragmentFriendList extends Fragment
 {
 
     // TODO: Rename and change types of parameters
     private View fView = null;
     private ListView userListView;
     private CokModel cm;
-    private UserOpenHelper sh;
+    private FriendSqlHelper sh;
     private String uId;
     private String token;
 
 
 
-    public static FragmentUserList newInstance() {
-        FragmentUserList fragment = new FragmentUserList();
+    public static FragmentFriendList newInstance() {
+        FragmentFriendList fragment = new FragmentFriendList();
         return fragment;
     }
 
-    public FragmentUserList() {
+    public FragmentFriendList() {
         // Required empty public constructor
     }
 
@@ -67,11 +65,11 @@ public class FragmentUserList extends Fragment
                 JSONObject uParam = new JSONObject();
                 uParam.put("uId", uId);
                 uParam.put("token", token);
-                uParam.put("date", cm.getDtInfo("dtUList"));
+                uParam.put("date", cm.getDtInfo("dtFList"));
 
                 JSONArray uArr = new JSONArray();
                 uArr.put(uParam);
-                JSONObject jsObj = cm.getJsObj("user.getMobileUserList", uArr);
+                JSONObject jsObj = cm.getJsObj("user.getMobileFriendList", uArr);
 
                 String postRes = cm.POST(jsObj.toString());
                 JSONObject pR = new JSONObject(postRes);
@@ -86,11 +84,11 @@ public class FragmentUserList extends Fragment
 
                 if (! ul.act) {
                     sh.uDrop();
-                    sh.uInsert(ul.data);
-                    cm.setDtInfo("dtUList", new Date());
+                    sh.insert(ul.data);
+                    cm.setDtInfo("dtFList", new Date());
                 }
 
-                return sh.uGetAll();
+                return sh.getAll();
             } catch (Exception e) {
                 Log.e("post exception ", "" + e.getMessage());
                 return e;
@@ -103,7 +101,7 @@ public class FragmentUserList extends Fragment
                 cm.errToast((Exception) result);
             }
             else {
-                UserListAdapter adapter = new UserListAdapter(getActivity(), R.layout.user_item);
+                FriendListAdapter adapter = new FriendListAdapter(getActivity(), R.layout.user_item);
                 adapter.addAll((List<UserModel.UserItem>) result);
                 userListView.setAdapter(adapter);
             }
@@ -117,9 +115,9 @@ public class FragmentUserList extends Fragment
 
         userListView = (ListView) fView.findViewById(R.id.userListView);
 
-        Activity act = FragmentUserList.this.getActivity();
+        Activity act = FragmentFriendList.this.getActivity();
         cm = new CokModel(act.getApplicationContext());
-        sh = new UserOpenHelper(act.getApplicationContext());
+        sh = new FriendSqlHelper(act.getApplicationContext());
         Map<String, String> user = cm.getUser();
         uId = user.get("_id");
         token = user.get("token");
