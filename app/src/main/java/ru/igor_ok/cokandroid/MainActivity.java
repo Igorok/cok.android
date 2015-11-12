@@ -150,6 +150,19 @@ public class MainActivity extends ActionBarActivity
                         .commit();
                 fManager.executePendingTransactions();
                 break;
+            case "cRom":
+                setTitle(getString(R.string.title_activity_group_chat));
+                FragmentRoomList fRoomList = (FragmentRoomList) fManager.findFragmentByTag(_fId);
+                if (fRoomList == null) {
+                    fRoomList = FragmentRoomList.newInstance();
+                }
+                fManager
+                        .beginTransaction()
+                        .replace(R.id.content_frame, fRoomList, _fId)
+                        .addToBackStack(_fId)
+                        .commit();
+                fManager.executePendingTransactions();
+                break;
             default:
                 break;
         }
