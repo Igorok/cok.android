@@ -14,7 +14,7 @@ import android.widget.TextView;
 
 public class FragmentUserDetail extends Fragment {
     private static final String ARG_USR_ID = "userId";
-    private UserOpenHelper uSql;
+    private UserSqlHelper uSql;
 
     private String userId;
 
@@ -72,7 +72,7 @@ public class FragmentUserDetail extends Fragment {
         super.onActivityCreated(savedInstanceState);
 
         userId = getArguments().getString(ARG_USR_ID);
-        uSql = new UserOpenHelper(getActivity());
+        uSql = new UserSqlHelper(getActivity());
 
         UserModel.UserItem ui = uSql.uGetOne(userId);
         user_name.setText(ui.login);

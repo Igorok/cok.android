@@ -155,3 +155,6 @@ class RoomListAdapter extends ArrayAdapter<ChatModel.RoomItem> {
         }
     }
 }
+
+
+

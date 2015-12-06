@@ -15,6 +15,15 @@ import java.util.List;
  * Created by igor on 26.07.15.
  */
 public class UserModel {
+    public class UserAuth {
+        public String _id;
+        public String token;
+        public String login;
+        public String email;
+        public String group;
+        public Integer status;
+        public String created;
+    }
 
     public class UserItem {
         public String _id;

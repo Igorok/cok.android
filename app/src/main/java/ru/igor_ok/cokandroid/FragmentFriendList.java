@@ -3,23 +3,12 @@ package ru.igor_ok.cokandroid;
 
 import android.app.Activity;
 import android.app.Fragment;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import java.util.Date;
-import java.util.List;
-import java.util.Map;
 
 
 public class FragmentFriendList extends Fragment
@@ -30,10 +19,6 @@ public class FragmentFriendList extends Fragment
     private ListView userListView;
     private CokModel cm;
     private FriendSqlHelper sh;
-    private String uId;
-    private String token;
-
-
 
     public static FragmentFriendList newInstance() {
         FragmentFriendList fragment = new FragmentFriendList();
@@ -43,7 +28,6 @@ public class FragmentFriendList extends Fragment
     public FragmentFriendList() {
         // Required empty public constructor
     }
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -57,57 +41,6 @@ public class FragmentFriendList extends Fragment
         return fView;
     }
 
-
-    protected class GetUsers extends AsyncTask<Void, Void, Object> {
-        @Override
-        protected Object doInBackground (Void... params) {
-            try {
-                JSONObject uParam = new JSONObject();
-                uParam.put("uId", uId);
-                uParam.put("token", token);
-                uParam.put("date", cm.getDtInfo("dtFList"));
-
-                JSONArray uArr = new JSONArray();
-                uArr.put(uParam);
-                JSONObject jsObj = cm.getJsObj("user.getMobileFriendList", uArr);
-
-                String postRes = cm.POST(jsObj.toString());
-                JSONObject pR = new JSONObject(postRes);
-                JSONArray rA = pR.getJSONArray("result");
-                JSONObject resObj = rA.getJSONObject(0);
-
-                GsonBuilder builder = new GsonBuilder();
-                builder.setPrettyPrinting().serializeNulls();
-                Gson gson = builder.create();
-                UserModel.UserList ul = gson.fromJson(resObj.toString(), UserModel.UserList.class);
-
-
-                if (! ul.act) {
-                    sh.uDrop();
-                    sh.insert(ul.data);
-                    cm.setDtInfo("dtFList", new Date());
-                }
-
-                return sh.getAll();
-            } catch (Exception e) {
-                Log.e("post exception ", "" + e.getMessage());
-                return e;
-            }
-        }
-        @Override
-        protected void onPostExecute(Object result) {
-
-            if (result instanceof Exception) {
-                cm.errToast((Exception) result);
-            }
-            else {
-                FriendListAdapter adapter = new FriendListAdapter(getActivity(), R.layout.user_item);
-                adapter.addAll((List<UserModel.UserItem>) result);
-                userListView.setAdapter(adapter);
-            }
-        }
-    }
-
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         setRetainInstance(true);
@@ -118,15 +51,24 @@ public class FragmentFriendList extends Fragment
         Activity act = FragmentFriendList.this.getActivity();
         cm = new CokModel(act.getApplicationContext());
         sh = new FriendSqlHelper(act.getApplicationContext());
-        Map<String, String> user = cm.getUser();
-        uId = user.get("_id");
-        token = user.get("token");
 
-        new GetUsers().execute();
+        GetFriendList getFList = new GetFriendList(act.getApplicationContext(), new OnTaskCompleted () {
+            @Override
+            public void onTaskCompleted(Object result) {
+                UserModel.UserList fl = (UserModel.UserList) result;
+                if (! fl.act) {
+                    sh.uDrop();
+                    sh.insert(fl.data);
+                    cm.setDtInfo("dtFList", new Date());
+                }
+
+                FriendListAdapter adapter = new FriendListAdapter(getActivity(), R.layout.user_item);
+                adapter.addAll(sh.getAll());
+                userListView.setAdapter(adapter);
+            }
+        });
+        getFList.execute();
     }
-
-
-
 
     @Override
     public void onAttach(Activity _act) {

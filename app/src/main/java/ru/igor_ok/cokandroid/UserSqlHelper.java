@@ -10,7 +10,7 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 
-public class UserOpenHelper extends SQLiteOpenHelper {
+public class UserSqlHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "cok_db";
     private static final int DATABASE_VERSION = 3;
     private static final String USER_TABLE_NAME = "users";
@@ -18,7 +18,7 @@ public class UserOpenHelper extends SQLiteOpenHelper {
             "CREATE TABLE IF NOT EXISTS " + USER_TABLE_NAME +
                     " (_id TEXT, login TEXT, email TEXT, friend INTEGER);";
 
-    UserOpenHelper(Context mContext) {
+    UserSqlHelper(Context mContext) {
         super(mContext, DATABASE_NAME, null, DATABASE_VERSION);
 
     }

@@ -1,6 +1,5 @@
 package ru.igor_ok.cokandroid;
 
-import android.content.AsyncTaskLoader;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
@@ -21,6 +20,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -29,16 +29,20 @@ import java.util.List;
 import java.util.Map;
 
 
+import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 
 
-/**
- * Created by igor on 04.07.15.
- */
+
+interface OnTaskCompleted {
+    void onTaskCompleted(Object result);
+}
+
 public class CokModel {
     private Context mContext;
     private Map<String, String> user = new HashMap<>();
@@ -103,6 +107,24 @@ public class CokModel {
         SharedPreferences userStorage = mContext.getSharedPreferences("user", 0);
         SharedPreferences.Editor editor = userStorage.edit();
         editor.putString(_t, dStr);
+        editor.commit();
+    }
+
+    /**
+     * @param uAuth current user
+     */
+    public void setAuth(UserModel.UserAuth uAuth) {
+        String login = uAuth.login;
+        String email = uAuth.email;
+        String token = uAuth.token;
+        String _id = uAuth._id;
+
+        SharedPreferences userStorage = mContext.getSharedPreferences("user", 0);
+        SharedPreferences.Editor editor = userStorage.edit();
+        editor.putString("login", login);
+        editor.putString("email", email);
+        editor.putString("token", token);
+        editor.putString("_id", _id);
         editor.commit();
     }
 
@@ -210,29 +232,199 @@ public class CokModel {
 }
 
 
-/**
- * get user list from http
- */
-class UserListLoader extends AsyncTaskLoader<List<UserModel.UserItem>> {
-    private CokModel cm = null;
-    private String uId = null;
-    private String token = null;
-    private UserOpenHelper sh = null;
-    public UserListLoader(Context context) {
-        super(context);
-        cm = new CokModel(context);
-        sh = new UserOpenHelper(context);
-        Map<String, String> user = cm.getUser();
-        uId = user.get("_id");
-        token = user.get("token");
 
-        onContentChanged();
+
+
+
+
+class AppLogin extends AsyncTask<Void, Void, Object> {
+    private CokModel cm = null;
+    private String login = null;
+    private String password = null;
+    private Context mContext = null;
+    private OnTaskCompleted listener;
+
+    public AppLogin(String login, String password, Context c, OnTaskCompleted l) {
+        this.mContext = c;
+        this.cm = new CokModel(this.mContext);
+        this.login = login;
+        this.password= password;
+
+        this.listener = l;
     }
 
     @Override
-    public List<UserModel.UserItem> loadInBackground() {
-        JSONObject uParam = new JSONObject();
+    protected Object doInBackground (Void... params) {
         try {
+            JSONObject fData = new JSONObject();
+            fData.put("login", this.login);
+            fData.put("password", this.password);
+
+            JSONArray arr = new JSONArray();
+            arr.put(fData);
+            JSONObject jsObj = this.cm.getJsObj("user.Authorise", arr);
+
+            String postRes = this.cm.POST(jsObj.toString());
+            JSONObject pR = new JSONObject(postRes);
+            JSONArray rA = pR.getJSONArray("result");
+            JSONObject jsU = rA.getJSONObject(0);
+
+            GsonBuilder builder = new GsonBuilder();
+            builder.setPrettyPrinting().serializeNulls();
+            Gson gson = builder.create();
+            UserModel.UserAuth user = gson.fromJson(jsU.toString(), UserModel.UserAuth.class);
+            cm.setAuth(user);
+
+            return user;
+        } catch (Exception e) {
+            Log.e("post exception ", "" + e.getMessage());
+            return e;
+        }
+    }
+    @Override
+    protected void onPostExecute(Object result) {
+
+        if (result instanceof Exception) {
+            this.cm.errToast((Exception) result);
+        }
+        else {
+            this.listener.onTaskCompleted(result);
+        }
+    }
+}
+
+class GetRoomList extends AsyncTask<Void, Void, Object> {
+    private CokModel cm = null;
+    private String uId = null;
+    private String token = null;
+    private OnTaskCompleted listener;
+
+    public GetRoomList(Context c, OnTaskCompleted l) {
+        this.cm = new CokModel(c);
+        Map<String, String> user = cm.getUser();
+        this.uId = user.get("_id");
+        this.token = user.get("token");
+
+        this.listener = l;
+    }
+
+
+    @Override
+    protected Object doInBackground (Void... params) {
+        try {
+            JSONObject uParam = new JSONObject();
+            uParam.put("uId", this.uId);
+            uParam.put("token", this.token);
+            uParam.put("date", this.cm.getDtInfo("dtFList"));
+
+            JSONArray arr = new JSONArray();
+            arr.put(uParam);
+            JSONObject jsObj = this.cm.getJsObj("chat.getChatList", arr);
+
+            String postRes = this.cm.POST(jsObj.toString());
+            JSONObject pR = new JSONObject(postRes);
+            JSONArray rA = pR.getJSONArray("result");
+            JSONArray jsRl = rA.getJSONArray(0);
+
+            GsonBuilder builder = new GsonBuilder();
+            builder.setPrettyPrinting().serializeNulls();
+            Gson gson = builder.create();
+            Type collectionType = new TypeToken<List<ChatModel.RoomItem>>() {
+            }.getType();
+            List<ChatModel.RoomItem> rl = gson.fromJson(jsRl.toString(), collectionType);
+
+            return rl;
+        } catch (Exception e) {
+            Log.e("post exception ", "" + e.getMessage());
+            return e;
+        }
+    }
+    @Override
+    protected void onPostExecute(Object result) {
+
+        if (result instanceof Exception) {
+            this.cm.errToast((Exception) result);
+        }
+        else {
+            this.listener.onTaskCompleted(result);
+        }
+    }
+}
+
+class GetFriendList extends AsyncTask<Void, Void, Object> {
+    private CokModel cm = null;
+    private String uId = null;
+    private String token = null;
+    private OnTaskCompleted listener;
+
+    public GetFriendList(Context c, OnTaskCompleted l) {
+        this.cm = new CokModel(c);
+        Map<String, String> user = cm.getUser();
+        this.uId = user.get("_id");
+        this.token = user.get("token");
+
+        this.listener = l;
+    }
+
+    @Override
+    protected Object doInBackground (Void... params) {
+        try {
+            JSONObject uParam = new JSONObject();
+            uParam.put("uId", uId);
+            uParam.put("token", token);
+            uParam.put("date", cm.getDtInfo("dtFList"));
+
+            JSONArray uArr = new JSONArray();
+            uArr.put(uParam);
+            JSONObject jsObj = cm.getJsObj("user.getMobileFriendList", uArr);
+
+            String postRes = cm.POST(jsObj.toString());
+            JSONObject pR = new JSONObject(postRes);
+            JSONArray rA = pR.getJSONArray("result");
+            JSONObject resObj = rA.getJSONObject(0);
+
+            GsonBuilder builder = new GsonBuilder();
+            builder.setPrettyPrinting().serializeNulls();
+            Gson gson = builder.create();
+            UserModel.UserList ul = gson.fromJson(resObj.toString(), UserModel.UserList.class);
+            return ul;
+        } catch (Exception e) {
+            Log.e("post exception ", "" + e.getMessage());
+            return e;
+        }
+    }
+    @Override
+    protected void onPostExecute(Object result) {
+
+        if (result instanceof Exception) {
+            cm.errToast((Exception) result);
+        }
+        else {
+            this.listener.onTaskCompleted(result);
+        }
+    }
+}
+
+
+class GetUserList extends AsyncTask<Void, Void, Object> {
+    private CokModel cm = null;
+    private String uId = null;
+    private String token = null;
+    private OnTaskCompleted listener;
+
+    public GetUserList(Context c, OnTaskCompleted l) {
+        this.cm = new CokModel(c);
+        Map<String, String> user = cm.getUser();
+        this.uId = user.get("_id");
+        this.token = user.get("token");
+
+        this.listener = l;
+    }
+
+    @Override
+    protected Object doInBackground (Void... params) {
+        try {
+            JSONObject uParam = new JSONObject();
             uParam.put("uId", uId);
             uParam.put("token", token);
             uParam.put("date", cm.getDtInfo("dtUList"));
@@ -250,62 +442,19 @@ class UserListLoader extends AsyncTaskLoader<List<UserModel.UserItem>> {
             builder.setPrettyPrinting().serializeNulls();
             Gson gson = builder.create();
             UserModel.UserList ul = gson.fromJson(resObj.toString(), UserModel.UserList.class);
-
-
-            if (! ul.act) {
-                sh.uDrop();
-                sh.uInsert(ul.data);
-                cm.setDtInfo("dtUList", new Date());
-            }
+            return ul;
         } catch (Exception e) {
-            Log.e("User loader ", "" + e.getMessage());
-            cm.errToast(e);
-        }
-
-        return sh.uGetAll();
-    }
-
-
-    /**
-     * Called when there is new data to deliver to the client.  The
-     * super class will take care of delivering it; the implementation
-     * here just adds a little more logic.
-     */
-    @Override public void deliverResult(List<UserModel.UserItem> ul) {
-        Boolean start = isStarted();
-        Boolean reset = isReset();
-        Boolean abadon = isAbandoned();
-        if (start) {
-            super.deliverResult(ul);
+            Log.e("post exception ", "" + e.getMessage());
+            return e;
         }
     }
-
-    /**
-     * Handles a request to stop the Loader.
-     */
-    @Override protected void onStopLoading() {
-        cancelLoad();
-    }
-
-    /**
-     * Handles a request to cancel a load.
-     */
-    @Override public void onCanceled(List<UserModel.UserItem> ul) {
-        super.onCanceled(ul);
-
-    }
-
-    /**
-     * Handles a request to completely reset the Loader.
-     */
-    @Override protected void onReset() {
-        super.onReset();
-
-        // Ensure the loader is stopped
-        onStopLoading();
+    @Override
+    protected void onPostExecute(Object result) {
+        if (result instanceof Exception) {
+            cm.errToast((Exception) result);
+        }
+        else {
+            this.listener.onTaskCompleted(result);
+        }
     }
 }
-
-
-
-//getUserUpdated

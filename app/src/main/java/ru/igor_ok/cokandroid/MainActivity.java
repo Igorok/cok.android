@@ -3,7 +3,6 @@ package ru.igor_ok.cokandroid;
 
 import android.content.SharedPreferences;
 import android.net.Uri;
-import android.app.Fragment;
 import android.app.FragmentManager;
 
 
@@ -31,26 +30,12 @@ public class MainActivity extends ActionBarActivity
     protected CokModel cm;
 
     private List<CokModel.mItem> mList;
-
-
-
-    private FragmentManager fManager;
-
     private DrawerLayout navLayout;
     private ListView navList;
     private ArrayAdapter<String> strAdapter;
     private Map<String, String> usr;
 
-
-
-
-
-//    private FragmentMain fMain = null;
-//    private FragmentUserList fUserList = null;
-//    private FragmentUserDetail fUserDetail = null;
-//    private FragmentChatPersonal fChatPersonal = null;
-
-    private void fragmentLaunch(String _fId, Map<String, String> _fData, Boolean rest) {
+    private void fragmentLaunch(String _fId, Map<String, String> _fData) {
         SharedPreferences fStorage = getSharedPreferences("fragment", 0);
         SharedPreferences.Editor editor = fStorage.edit();
         editor.putString("fId", _fId);
@@ -182,7 +167,7 @@ public class MainActivity extends ActionBarActivity
             _fData.put("fUId", fUId);
         }
 
-        fragmentLaunch(_fId, _fData, true);
+        fragmentLaunch(_fId, _fData);
     }
 
     @Override
@@ -198,18 +183,18 @@ public class MainActivity extends ActionBarActivity
     public void getUserDetail(String userId) {
         Map<String, String> _fData = new HashMap<String, String>();
         _fData.put("fUId", userId);
-        fragmentLaunch("uDet", _fData, false);
+        fragmentLaunch("uDet", _fData);
     }
     public void getFriendDetail(String userId) {
         Map<String, String> _fData = new HashMap<String, String>();
         _fData.put("fUId", userId);
-        fragmentLaunch("fDet", _fData, false);
+        fragmentLaunch("fDet", _fData);
     }
 
     public void getChatPersonal(String userId) {
         Map<String, String> _fData = new HashMap<String, String>();
         _fData.put("fUId", userId);
-        fragmentLaunch("cPers", _fData, false);
+        fragmentLaunch("cPers", _fData);
     }
 
 
@@ -239,7 +224,7 @@ public class MainActivity extends ActionBarActivity
         navList.setClickable(true);
         navList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                fragmentLaunch(mList.get(position).key, null, false);
+                fragmentLaunch(mList.get(position).key, null);
             }
         });
 
