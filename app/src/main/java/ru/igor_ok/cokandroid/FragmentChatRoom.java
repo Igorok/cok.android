@@ -24,15 +24,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-public class FragmentChatPersonal extends Fragment {
-    private static final String ARG_PID = "pId";
-    private OnChatPersListener mListener;
+public class FragmentChatRoom extends Fragment {
+    private static final String ARG_RID = "rId";
+    private OnChatRoomListener mListener;
 
     private CokModel cm;
     Activity mActivity;
 
-    private String pId;
-    private String uLogin;
     private String uId;
     private String token;
 
@@ -48,7 +46,7 @@ public class FragmentChatPersonal extends Fragment {
     private Socket mSocket;
     private ChatModel.MsgListAdapter msgAdp;
 
-    private Emitter.Listener joinPersonal = new Emitter.Listener() {
+    private Emitter.Listener joinRoom = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
             try {
@@ -62,7 +60,6 @@ public class FragmentChatPersonal extends Fragment {
                             Gson gson = builder.create();
 
                             ChatModel.CRoom cr = gson.fromJson(argObj.toString(), ChatModel.CRoom.class);
-                            rId = cr._id;
                             String uLogins = "";
                             for (HashMap.Entry<String, ChatModel.UsrItem> entry : cr.users.entrySet()) {
                                 ChatModel.UsrItem myStr = entry.getValue();
@@ -136,15 +133,15 @@ public class FragmentChatPersonal extends Fragment {
     };
 
     // TODO: Rename and change types and number of parameters
-    public static FragmentChatPersonal newInstance(String pId) {
-        FragmentChatPersonal fragment = new FragmentChatPersonal();
+    public static FragmentChatRoom newInstance(String _rId) {
+        FragmentChatRoom fragment = new FragmentChatRoom();
         Bundle args = new Bundle();
-        args.putString(ARG_PID, pId);
+        args.putString(ARG_RID, _rId);
         fragment.setArguments(args);
         return fragment;
     }
 
-    public FragmentChatPersonal() {
+    public FragmentChatRoom() {
         // Required empty public constructor
     }
 
@@ -162,9 +159,9 @@ public class FragmentChatPersonal extends Fragment {
         return fView;
     }
 
-    public void setUserId(String _id) {
+    public void setRoomId(String _id) {
         Bundle a = getArguments();
-        a.putString(ARG_PID, _id);
+        a.putString(ARG_RID, _id);
     }
 
     @Override
@@ -173,14 +170,13 @@ public class FragmentChatPersonal extends Fragment {
         super.onActivityCreated(savedInstanceState);
 
         if (getArguments() != null) {
-            pId = getArguments().getString(ARG_PID);
+            rId = getArguments().getString(ARG_RID);
         }
-        mActivity = FragmentChatPersonal.this.getActivity();
+        mActivity = FragmentChatRoom.this.getActivity();
         cm = new CokModel(mActivity);
         Map<String, String> usr = cm.getUser();
         token = usr.get("token");
         uId = usr.get("_id");
-        uLogin = usr.get("login");
 
         sendBtn.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -211,11 +207,11 @@ public class FragmentChatPersonal extends Fragment {
 
         try {
             if (mListener == null) {
-                mListener = (OnChatPersListener) mActivity;
+                mListener = (OnChatRoomListener) mActivity;
             }
             if (mSocket == null) {
                 mSocket = IO.socket(socketio);
-                mSocket.on("joinPersonal", joinPersonal);
+                mSocket.on("joinRoom", joinRoom);
                 mSocket.on("message", getMessage);
                 mSocket.connect();
             }
@@ -227,9 +223,9 @@ public class FragmentChatPersonal extends Fragment {
             JSONObject jData = new JSONObject();
             jData.put("uId", uId);
             jData.put("token", token);
-            jData.put("personId", pId);
+            jData.put("rId", rId);
             jData.put("limit", 100);
-            mSocket.emit("joinPersonal", jData);
+            mSocket.emit("joinRoom", jData);
         } catch (Exception e) {
             Exception ex = e;
             Log.e("socketio ", "" + ex.getMessage());
@@ -244,7 +240,7 @@ public class FragmentChatPersonal extends Fragment {
         super.onPause();
 
         mSocket.off("message", getMessage);
-        mSocket.off("joinPersonal", joinPersonal);
+        mSocket.off("joinRoom", joinRoom);
         mSocket.disconnect();
 
         mListener = null;
@@ -256,8 +252,8 @@ public class FragmentChatPersonal extends Fragment {
     public void onDetach() {
         super.onDetach();
     }
-    public interface OnChatPersListener {
-        public void setTitle(String title);
+    public interface OnChatRoomListener {
+        void setTitle(String title);
     }
 
 }

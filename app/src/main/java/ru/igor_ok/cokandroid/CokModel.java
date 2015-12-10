@@ -82,7 +82,7 @@ public class CokModel {
         mList.add(mi);
 
         mi = new mItem();
-        mi.key = "cRom";
+        mi.key = "cRoomList";
         mi.title = "Chat rooms";
         mList.add(mi);
     }

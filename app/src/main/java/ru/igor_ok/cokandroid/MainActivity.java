@@ -25,7 +25,8 @@ public class MainActivity extends ActionBarActivity
     implements FragmentMain.OnFragmentInteractionListener,
         FragmentUserDetail.OnUserDetailListener,
         FragmentFriendDetail.OnFriendDetailListener,
-        FragmentChatPersonal.OnChatPersListener
+        FragmentChatPersonal.OnChatPersListener,
+        FragmentChatRoom.OnChatRoomListener
 {
     protected CokModel cm;
 
@@ -135,7 +136,7 @@ public class MainActivity extends ActionBarActivity
                         .commit();
                 fManager.executePendingTransactions();
                 break;
-            case "cRom":
+            case "cRoomList":
                 setTitle(getString(R.string.title_activity_group_chat));
                 FragmentRoomList fRoomList = (FragmentRoomList) fManager.findFragmentByTag(_fId);
                 if (fRoomList == null) {
@@ -144,6 +145,23 @@ public class MainActivity extends ActionBarActivity
                 fManager
                         .beginTransaction()
                         .replace(R.id.content_frame, fRoomList, _fId)
+                        .addToBackStack(_fId)
+                        .commit();
+                fManager.executePendingTransactions();
+                break;
+            case "cRoom":
+                setTitle(getString(R.string.title_activity_group_chat));
+                FragmentChatRoom fRoom = (FragmentChatRoom) fManager.findFragmentByTag(_fId);
+                String rId = _fData.get("rId");
+                if (fRoom == null) {
+                    fRoom = FragmentChatRoom.newInstance(rId);
+                } else {
+                    fRoom.setRoomId(rId);
+                }
+
+                fManager
+                        .beginTransaction()
+                        .replace(R.id.content_frame, fRoom, _fId)
                         .addToBackStack(_fId)
                         .commit();
                 fManager.executePendingTransactions();
@@ -197,6 +215,11 @@ public class MainActivity extends ActionBarActivity
         fragmentLaunch("cPers", _fData);
     }
 
+    public void getChatRoom(String rId) {
+        Map<String, String> _fData = new HashMap<String, String>();
+        _fData.put("rId", rId);
+        fragmentLaunch("cRoom", _fData);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

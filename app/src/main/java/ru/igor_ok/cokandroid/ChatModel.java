@@ -139,15 +139,14 @@ class RoomListAdapter extends ArrayAdapter<ChatModel.RoomItem> {
             roomName.setText(users);
             roomDate.setText(item.fcDate);
 
-//            v.setOnClickListener(new View.OnClickListener() {
-//                @Override
-//                public void onClick(View cView) {
-//                    if (mContext instanceof MainActivity) {
-//                        String _id = item._id;
-//                        ((MainActivity) mContext).getFriendDetail(_id);
-//                    }
-//                }
-//            });
+            v.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View cView) {
+                    if (mContext instanceof MainActivity) {
+                        ((MainActivity) mContext).getChatRoom(item._id);
+                    }
+                }
+            });
             return v;
         } catch (Exception ex) {
             Log.e("adapter exception ", "" + ex.getMessage());
