@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,6 +23,8 @@ public class ChatModel {
         public String login;
         public String msg;
         public String uId;
+        public Integer dt;
+        public String rId;
     }
 
     public class UsrItem {

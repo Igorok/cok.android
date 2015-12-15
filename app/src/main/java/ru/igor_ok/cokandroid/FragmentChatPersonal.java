@@ -1,6 +1,7 @@
 package ru.igor_ok.cokandroid;
 
 import android.app.Activity;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.util.Log;
@@ -20,7 +21,10 @@ import com.google.gson.GsonBuilder;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -29,10 +33,10 @@ public class FragmentChatPersonal extends Fragment {
     private OnChatPersListener mListener;
 
     private CokModel cm;
+    private ChatSqlHelper sh;
     Activity mActivity;
 
     private String pId;
-    private String uLogin;
     private String uId;
     private String token;
 
@@ -68,13 +72,10 @@ public class FragmentChatPersonal extends Fragment {
                                 ChatModel.UsrItem myStr = entry.getValue();
                                 uLogins += myStr.login + " ";
                             }
+                            sh.insertMsg(cr.history, pId);
 
-                            msgAdp = new ChatModel.MsgListAdapter(mActivity, R.layout.chat_msg_item);
                             msgAdp.addAll(cr.history);
-
-
-                            lv.setAdapter(msgAdp);
-
+                            msgAdp.notifyDataSetChanged();
                             mListener.setTitle(uLogins);
 
                         } catch (Exception e) {
@@ -118,6 +119,11 @@ public class FragmentChatPersonal extends Fragment {
                             Gson gson = builder.create();
 
                             ChatModel.MsgItem msgItem = gson.fromJson(argObj.toString(), ChatModel.MsgItem.class);
+
+                            List<ChatModel.MsgItem> lMsg = new ArrayList<ChatModel.MsgItem>();
+                            lMsg.add(msgItem);
+                            sh.insertMsg(lMsg, pId);
+
                             msgAdp.add(msgItem);
                             msgAdp.notifyDataSetChanged();
 
@@ -177,10 +183,13 @@ public class FragmentChatPersonal extends Fragment {
         }
         mActivity = FragmentChatPersonal.this.getActivity();
         cm = new CokModel(mActivity);
+        sh = new ChatSqlHelper(mActivity);
+        SQLiteDatabase db = sh.getWritableDatabase();
+        sh.onCreate(db);
+
         Map<String, String> usr = cm.getUser();
         token = usr.get("token");
         uId = usr.get("_id");
-        uLogin = usr.get("login");
 
         sendBtn.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -221,14 +230,28 @@ public class FragmentChatPersonal extends Fragment {
             }
 
 
+            List<ChatModel.MsgItem> mList = sh.getMsg("pers", pId);
+            msgAdp = new ChatModel.MsgListAdapter(mActivity, R.layout.chat_msg_item);
+            lv.setAdapter(msgAdp);
 
 
+            if (mList.size() != 0) {
+                if (mList.size() > 100) {
+                    Integer dCount = sh.removeOld("pers", pId, mList.get(100).dt);
+                }
+                msgAdp.addAll(mList);
+                msgAdp.notifyDataSetChanged();
+            }
 
             JSONObject jData = new JSONObject();
             jData.put("uId", uId);
             jData.put("token", token);
             jData.put("personId", pId);
-            jData.put("limit", 100);
+            if (mList.size() != 0) {
+                jData.put("fDate", mList.get(0).dt);
+            } else {
+                jData.put("limit", 100);
+            }
             mSocket.emit("joinPersonal", jData);
         } catch (Exception e) {
             Exception ex = e;

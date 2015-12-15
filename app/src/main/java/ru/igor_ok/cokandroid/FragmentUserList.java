@@ -50,6 +50,7 @@ public class FragmentUserList extends Fragment
         Activity act = FragmentUserList.this.getActivity();
         cm = new CokModel(act.getApplicationContext());
         sh = new UserSqlHelper(act.getApplicationContext());
+        sh.getWritableDatabase();
 
         GetUserList getUList = new GetUserList(act.getApplicationContext(), new OnTaskCompleted () {
             @Override

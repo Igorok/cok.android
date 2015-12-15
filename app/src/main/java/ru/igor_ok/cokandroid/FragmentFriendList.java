@@ -51,6 +51,7 @@ public class FragmentFriendList extends Fragment
         Activity act = FragmentFriendList.this.getActivity();
         cm = new CokModel(act.getApplicationContext());
         sh = new FriendSqlHelper(act.getApplicationContext());
+        sh.getWritableDatabase();
 
         GetFriendList getFList = new GetFriendList(act.getApplicationContext(), new OnTaskCompleted () {
             @Override
