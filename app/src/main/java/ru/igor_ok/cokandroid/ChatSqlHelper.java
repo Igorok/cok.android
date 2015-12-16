@@ -17,7 +17,7 @@ public class ChatSqlHelper extends SQLiteOpenHelper {
     private static final String MESSAGE_TABLE_NAME = "messages";
     private static final String MESSAGE_TABLE_CREATE =
         "CREATE TABLE IF NOT EXISTS " + MESSAGE_TABLE_NAME +
-        " (date TEXT, login TEXT, msg TEXT, uId TEXT, rId TEXT, pId TEXT, dt INTEGER);";
+        " (date TEXT, login TEXT, msg TEXT, uId TEXT, rId TEXT, pId TEXT, dt INT);";
 
     ChatSqlHelper(Context mContext) {
         super(mContext, DATABASE_NAME, null, DATABASE_VERSION);
@@ -73,7 +73,7 @@ public class ChatSqlHelper extends SQLiteOpenHelper {
         } else {
             selectQuery += " where pId = '" + _id + "' ";
         }
-        selectQuery += "order by dt desc;";
+        selectQuery += "order by dt asc;";
 
 
         Cursor cursor = db.rawQuery(selectQuery, null);
@@ -87,7 +87,8 @@ public class ChatSqlHelper extends SQLiteOpenHelper {
                 msg.msg = cursor.getString(2);
                 msg.uId = cursor.getString(3);
                 msg.rId = cursor.getString(4);
-                msg.dt = cursor.getInt(5);
+                // here is pId
+                msg.dt = cursor.getInt(6);
                 mList.add(msg);
             } while (cursor.moveToNext());
         }
@@ -102,11 +103,11 @@ public class ChatSqlHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         String dq = "";
         if (_tp == "room") {
-            dq += "rId = " + _id;
+            dq += "rId = '" + _id;
         } else {
-            dq += "pId = " + _id;
+            dq += "pId = '" + _id;
         }
-        dq += "and dt < " + dt;
+        dq += "' and dt < " + dt;
         int delCount = db.delete(MESSAGE_TABLE_NAME, dq, null);
         return delCount;
     }

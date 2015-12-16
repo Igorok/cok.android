@@ -22,7 +22,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +31,7 @@ public class FragmentChatPersonal extends Fragment {
     private static final String ARG_PID = "pId";
     private OnChatPersListener mListener;
 
+    private final Integer LIMIT = 10;
     private CokModel cm;
     private ChatSqlHelper sh;
     Activity mActivity;
@@ -59,32 +59,26 @@ public class FragmentChatPersonal extends Fragment {
                 mActivity.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        try {
-                            JSONObject argObj = (JSONObject) args[0];
-                            GsonBuilder builder = new GsonBuilder();
-                            builder.setPrettyPrinting().serializeNulls();
-                            Gson gson = builder.create();
+                        JSONObject argObj = (JSONObject) args[0];
+                        GsonBuilder builder = new GsonBuilder();
+                        builder.setPrettyPrinting().serializeNulls();
+                        Gson gson = builder.create();
 
-                            ChatModel.CRoom cr = gson.fromJson(argObj.toString(), ChatModel.CRoom.class);
-                            rId = cr._id;
-                            String uLogins = "";
-                            for (HashMap.Entry<String, ChatModel.UsrItem> entry : cr.users.entrySet()) {
-                                ChatModel.UsrItem myStr = entry.getValue();
-                                uLogins += myStr.login + " ";
-                            }
-                            sh.insertMsg(cr.history, pId);
-
-                            msgAdp.addAll(cr.history);
-                            msgAdp.notifyDataSetChanged();
-                            mListener.setTitle(uLogins);
-
-                        } catch (Exception e) {
-                            Exception ex = e;
-                            cm.errToast(ex);
+                        ChatModel.CRoom cr = gson.fromJson(argObj.toString(), ChatModel.CRoom.class);
+                        rId = cr._id;
+                        String uLogins = "";
+                        for (HashMap.Entry<String, ChatModel.UsrItem> entry : cr.users.entrySet()) {
+                            ChatModel.UsrItem myStr = entry.getValue();
+                            uLogins += myStr.login + " ";
                         }
+
+                        sh.insertMsg(cr.history, pId);
+
+                        msgAdp.addAll(cr.history);
+                        msgAdp.notifyDataSetChanged();
+                        mListener.setTitle(uLogins);
                     }
                 });
-
             } catch (Exception e) {
                 Exception ex = e;
                 cm.errToast(ex);
@@ -112,25 +106,19 @@ public class FragmentChatPersonal extends Fragment {
                 mActivity.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        try {
-                            JSONObject argObj = (JSONObject) args[0];
-                            GsonBuilder builder = new GsonBuilder();
-                            builder.setPrettyPrinting().serializeNulls();
-                            Gson gson = builder.create();
+                        JSONObject argObj = (JSONObject) args[0];
+                        GsonBuilder builder = new GsonBuilder();
+                        builder.setPrettyPrinting().serializeNulls();
+                        Gson gson = builder.create();
 
-                            ChatModel.MsgItem msgItem = gson.fromJson(argObj.toString(), ChatModel.MsgItem.class);
+                        ChatModel.MsgItem msgItem = gson.fromJson(argObj.toString(), ChatModel.MsgItem.class);
 
-                            List<ChatModel.MsgItem> lMsg = new ArrayList<ChatModel.MsgItem>();
-                            lMsg.add(msgItem);
-                            sh.insertMsg(lMsg, pId);
+                        List<ChatModel.MsgItem> lMsg = new ArrayList<ChatModel.MsgItem>();
+                        lMsg.add(msgItem);
+                        sh.insertMsg(lMsg, pId);
 
-                            msgAdp.add(msgItem);
-                            msgAdp.notifyDataSetChanged();
-
-                        } catch (Exception e) {
-                            Exception ex = e;
-                            cm.errToast(ex);
-                        }
+                        msgAdp.add(msgItem);
+                        msgAdp.notifyDataSetChanged();
                     }
                 });
             } catch (Exception e) {
@@ -236,8 +224,8 @@ public class FragmentChatPersonal extends Fragment {
 
 
             if (mList.size() != 0) {
-                if (mList.size() > 100) {
-                    Integer dCount = sh.removeOld("pers", pId, mList.get(100).dt);
+                if (mList.size() > LIMIT) {
+                    Integer dCount = sh.removeOld("pers", pId, mList.get(0).dt);
                 }
                 msgAdp.addAll(mList);
                 msgAdp.notifyDataSetChanged();
@@ -247,10 +235,12 @@ public class FragmentChatPersonal extends Fragment {
             jData.put("uId", uId);
             jData.put("token", token);
             jData.put("personId", pId);
+
             if (mList.size() != 0) {
-                jData.put("fDate", mList.get(0).dt);
+                ChatModel.MsgItem mi = mList.get(LIMIT - 1);
+                jData.put("fDate", mi.dt);
             } else {
-                jData.put("limit", 100);
+                jData.put("limit", LIMIT);
             }
             mSocket.emit("joinPersonal", jData);
         } catch (Exception e) {
