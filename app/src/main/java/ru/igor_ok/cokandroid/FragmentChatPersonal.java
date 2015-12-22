@@ -237,7 +237,7 @@ public class FragmentChatPersonal extends Fragment {
             jData.put("personId", pId);
 
             if (mList.size() != 0) {
-                ChatModel.MsgItem mi = mList.get(LIMIT - 1);
+                ChatModel.MsgItem mi = mList.get(mList.size() - 1);
                 jData.put("fDate", mi.dt);
             } else {
                 jData.put("limit", LIMIT);
