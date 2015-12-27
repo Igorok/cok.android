@@ -183,6 +183,9 @@ public class MainActivity extends ActionBarActivity
         if (_fId.equals("uDet") || _fId.equals("fDet") || _fId.equals("cPers")) {
             String fUId = fStorage.getString("fUId", "");
             _fData.put("fUId", fUId);
+        } else if (_fId.equals("cRoom")) {
+            String rId = fStorage.getString("rId", "");
+            _fData.put("rId", rId);
         }
 
         fragmentLaunch(_fId, _fData);

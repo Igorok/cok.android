@@ -1,6 +1,7 @@
 package ru.igor_ok.cokandroid;
 
 import android.app.Activity;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.util.Log;
@@ -20,7 +21,9 @@ import com.google.gson.GsonBuilder;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -28,7 +31,9 @@ public class FragmentChatRoom extends Fragment {
     private static final String ARG_RID = "rId";
     private OnChatRoomListener mListener;
 
+    private final Integer LIMIT = 10;
     private CokModel cm;
+    private ChatSqlHelper sh;
     Activity mActivity;
 
     private String uId;
@@ -53,31 +58,24 @@ public class FragmentChatRoom extends Fragment {
                 mActivity.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        try {
-                            JSONObject argObj = (JSONObject) args[0];
-                            GsonBuilder builder = new GsonBuilder();
-                            builder.setPrettyPrinting().serializeNulls();
-                            Gson gson = builder.create();
+                        JSONObject argObj = (JSONObject) args[0];
+                        GsonBuilder builder = new GsonBuilder();
+                        builder.setPrettyPrinting().serializeNulls();
+                        Gson gson = builder.create();
 
-                            ChatModel.CRoom cr = gson.fromJson(argObj.toString(), ChatModel.CRoom.class);
-                            String uLogins = "";
-                            for (HashMap.Entry<String, ChatModel.UsrItem> entry : cr.users.entrySet()) {
-                                ChatModel.UsrItem myStr = entry.getValue();
-                                uLogins += myStr.login + " ";
-                            }
-
-                            msgAdp = new ChatModel.MsgListAdapter(mActivity, R.layout.chat_msg_item);
-                            msgAdp.addAll(cr.history);
-
-
-                            lv.setAdapter(msgAdp);
-
-                            mListener.setTitle(uLogins);
-
-                        } catch (Exception e) {
-                            Exception ex = e;
-                            cm.errToast(ex);
+                        ChatModel.CRoom cr = gson.fromJson(argObj.toString(), ChatModel.CRoom.class);
+                        String uLogins = "";
+                        for (HashMap.Entry<String, ChatModel.UsrItem> entry : cr.users.entrySet()) {
+                            ChatModel.UsrItem myStr = entry.getValue();
+                            uLogins += myStr.login + " ";
                         }
+
+                        sh.insertMsg(cr.history, null);
+
+
+                        msgAdp.addAll(cr.history);
+                        msgAdp.notifyDataSetChanged();
+                        mListener.setTitle(uLogins);
                     }
                 });
 
@@ -108,20 +106,18 @@ public class FragmentChatRoom extends Fragment {
                 mActivity.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        try {
-                            JSONObject argObj = (JSONObject) args[0];
-                            GsonBuilder builder = new GsonBuilder();
-                            builder.setPrettyPrinting().serializeNulls();
-                            Gson gson = builder.create();
+                        JSONObject argObj = (JSONObject) args[0];
+                        GsonBuilder builder = new GsonBuilder();
+                        builder.setPrettyPrinting().serializeNulls();
+                        Gson gson = builder.create();
 
-                            ChatModel.MsgItem msgItem = gson.fromJson(argObj.toString(), ChatModel.MsgItem.class);
-                            msgAdp.add(msgItem);
-                            msgAdp.notifyDataSetChanged();
+                        ChatModel.MsgItem msgItem = gson.fromJson(argObj.toString(), ChatModel.MsgItem.class);
+                        msgAdp.add(msgItem);
+                        msgAdp.notifyDataSetChanged();
 
-                        } catch (Exception e) {
-                            Exception ex = e;
-                            cm.errToast(ex);
-                        }
+                        List<ChatModel.MsgItem> lMsg = new ArrayList<ChatModel.MsgItem>();
+                        lMsg.add(msgItem);
+                        sh.insertMsg(lMsg, null);
                     }
                 });
             } catch (Exception e) {
@@ -174,6 +170,10 @@ public class FragmentChatRoom extends Fragment {
         }
         mActivity = FragmentChatRoom.this.getActivity();
         cm = new CokModel(mActivity);
+        sh = new ChatSqlHelper(mActivity);
+        SQLiteDatabase db = sh.getWritableDatabase();
+        sh.onCreate(db);
+
         Map<String, String> usr = cm.getUser();
         token = usr.get("token");
         uId = usr.get("_id");
@@ -216,15 +216,31 @@ public class FragmentChatRoom extends Fragment {
                 mSocket.connect();
             }
 
+            List<ChatModel.MsgItem> mList = sh.getMsg("room", rId);
+            msgAdp = new ChatModel.MsgListAdapter(mActivity, R.layout.chat_msg_item);
+            lv.setAdapter(msgAdp);
 
-
-
+            if (mList.size() != 0) {
+                if (mList.size() > LIMIT) {
+                    ChatModel.MsgItem oldMsg = mList.get(mList.size() - LIMIT);
+                    Integer dCount = sh.removeOld("room", rId, oldMsg.dt);
+                }
+                msgAdp.addAll(mList);
+                msgAdp.notifyDataSetChanged();
+            }
 
             JSONObject jData = new JSONObject();
             jData.put("uId", uId);
             jData.put("token", token);
             jData.put("rId", rId);
-            jData.put("limit", 100);
+
+            if (mList.size() != 0) {
+                ChatModel.MsgItem mi = mList.get(mList.size() - 1);
+                jData.put("fDate", mi.dt);
+            } else {
+                jData.put("limit", LIMIT);
+            }
+
             mSocket.emit("joinRoom", jData);
         } catch (Exception e) {
             Exception ex = e;

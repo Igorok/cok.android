@@ -222,10 +222,9 @@ public class FragmentChatPersonal extends Fragment {
             msgAdp = new ChatModel.MsgListAdapter(mActivity, R.layout.chat_msg_item);
             lv.setAdapter(msgAdp);
 
-
             if (mList.size() != 0) {
                 if (mList.size() > LIMIT) {
-                    Integer dCount = sh.removeOld("pers", pId, mList.get(0).dt);
+                    Integer dCount = sh.removeOld("pers", pId, mList.get(mList.size() - LIMIT).dt);
                 }
                 msgAdp.addAll(mList);
                 msgAdp.notifyDataSetChanged();
