@@ -4,42 +4,76 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="ru.igor_ok.cokandroid.FragmentMain">
+    tools:context="ru.igor_ok.cokandroid.FragmentMain"
+    android:background="@drawable/back_gradient"
+    >
         <TextView
             android:id="@+id/user_name"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            style="@style/text_headline"
+            android:text="@string/title_activity_main"
             />
 
         <TextView
             android:id="@+id/user_email"
             android:layout_below="@id/user_name"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            style="@style/text_simple"
+            android:text="Email"
             />
 
-        <Button
-            android:id="@+id/show_friends"
+
+
+        <LinearLayout
+            android:id="@+id/buttonCase"
             android:layout_below="@id/user_email"
-            android:layout_width="match_parent"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:onClick="appShowUsers"
-            android:text="Show users"
-            style="@style/btn_default"
-            />
+            android:orientation="horizontal" >
+
+            <Button
+                android:id="@+id/show_users"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_margin="10dp"
+                android:layout_height="wrap_content"
+                android:text="@string/title_activity_user_list"
+                android:layout_gravity="left"
+                style="@style/btn_success"
+                android:drawableLeft="@drawable/ic_users_w"
+                />
+
+
+            <Button
+                android:id="@+id/show_friends"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_margin="10dp"
+                android:layout_height="wrap_content"
+                android:text="@string/title_activity_friend_list"
+                android:layout_gravity="right"
+                style="@style/btn_success"
+                android:drawableLeft="@drawable/ic_friends_w"
+                />
+    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/buttonCase1"
+        android:layout_below="@id/buttonCase"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
 
         <Button
-            android:id="@+id/show_users"
-            android:layout_below="@id/show_friends"
-            android:layout_width="match_parent"
+            android:id="@+id/show_chats"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_margin="10dp"
             android:layout_height="wrap_content"
-            android:text="Show friend"
-            style="@style/btn_default"
+            android:text="@string/title_activity_group_chat"
+            android:layout_gravity="right"
+            style="@style/btn_success"
+            android:drawableLeft="@drawable/ic_chat_w"
             />
 
-
-
-
+    </LinearLayout>
 
 
 

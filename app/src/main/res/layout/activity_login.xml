@@ -11,13 +11,14 @@
     <EditText
         android:id="@+id/login_field"
         android:hint="@string/login"
-        style="@style/edit_text_gray"
+        style="@style/edit_text_white"
     />
     <EditText
         android:id="@+id/password_field"
         android:layout_below="@id/login_field"
         android:hint="@string/password"
-        style="@style/edit_text_gray"
+        android:inputType="textPassword"
+        style="@style/edit_text_white"
     />
 
     <Button

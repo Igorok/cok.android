@@ -17,26 +17,26 @@
         <item name="windowActionBarOverlay">false</item>
         <item name="actionMenuTextAppearance">@style/MyTitleTextStyle</item>
 
-        <item name="homeAsUpIndicator">@drawable/abc_ic_menu_moreoverflow_mtrl_alpha</item>
+        <item name="homeAsUpIndicator">@drawable/ic_menu_w</item>
     </style>
 
 
 
     <style name="MyTitleTextStyle" parent="@style/TextAppearance.AppCompat.Widget.ActionBar.Title">
-        <item name="android:textColor">#ffffff</item>
+        <item name="android:textColor">#fff</item>
         <item name="android:textSize">21sp</item>
         <item name="android:textStyle">bold</item>
     </style>
 
     <style name="MyActionBar" parent="@style/Widget.AppCompat.Light.ActionBar.Solid">
         <item name="android:titleTextStyle">@style/MyTitleTextStyle</item>
-        <item name="android:backgroundSplit">@drawable/back_orange</item>
-        <item name="android:background">@drawable/back_orange</item>
+        <item name="android:backgroundSplit">@color/orange</item>
+        <item name="android:background">@color/orange</item>
 
         <!-- Support library compatibility -->
         <item name="titleTextStyle">@style/MyTitleTextStyle</item>
-        <item name="background">@drawable/back_orange</item>
-        <item name="backgroundSplit">@drawable/back_orange</item>
+        <item name="background">@color/orange</item>
+        <item name="backgroundSplit">@color/orange</item>
     </style>
 
 
@@ -48,7 +48,7 @@
     <style name="login_message" parent="Theme.AppCompat.Light.DarkActionBar">
         <item name="android:layout_width">fill_parent</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:textColor">@color/green</item>
+        <item name="android:textColor">@color/green_dark</item>
         <item name="android:typeface">monospace</item>
         <item name="android:gravity">center</item>
     </style>
@@ -59,28 +59,57 @@
         <item name="android:layout_marginBottom">10dp</item>
     </style>
 
+    <style name="btn_success" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="android:textColor">#fff</item>
+        <item name="android:background">@color/green_dark</item>
+        <item name="android:layout_marginBottom">10dp</item>
+    </style>
+
     <style name="btn_danger" parent="Theme.AppCompat.Light.DarkActionBar">
         <item name="android:textColor">#fff</item>
-        <item name="android:background">@drawable/back_orange</item>
+        <item name="android:background">@color/red_light</item>
         <item name="android:layout_marginBottom">10dp</item>
     </style>
 
     <style name="btn_login" parent="Theme.AppCompat.Light.DarkActionBar">
         <item name="android:textColor">#fff</item>
-        <item name="android:background">@drawable/back_orange</item>
+        <item name="android:background">@color/orange</item>
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
     </style>
 
-    <style name="edit_text_gray" parent="Theme.AppCompat.Light.DarkActionBar">
-        <item name="android:textColor">#fff</item>
-        <item name="android:background">@drawable/back_edit_text</item>
+    <style name="edit_text_white" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="android:textColorHint">@color/green_dark</item>
+        <item name="android:textColor">@color/orange</item>
+        <item name="android:background">@drawable/textlines</item>
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:minHeight">40dp</item>
-        <item name="android:paddingLeft">15dp</item>
-        <item name="android:paddingRight">15dp</item>
-        <item name="android:layout_marginBottom">15dp</item>
+        <item name="android:minHeight">50dp</item>
+        <item name="android:paddingLeft">10dp</item>
+        <item name="android:paddingRight">10dp</item>
+        <item name="android:layout_marginBottom">10dp</item>
+    </style>
+
+
+    <style name="text_headline" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="android:textColor">@color/orange</item>
+        <item name="android:textSize">22sp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:paddingLeft">10dp</item>
+        <item name="android:paddingRight">10dp</item>
+        <item name="android:layout_marginBottom">10dp</item>
+        <item name="android:layout_marginTop">10dp</item>
+    </style>
+
+    <style name="text_simple" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="android:textSize">16sp</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:paddingLeft">10dp</item>
+        <item name="android:paddingRight">10dp</item>
+        <item name="android:layout_marginBottom">10dp</item>
     </style>
 
 
@@ -99,7 +128,7 @@
         <item name="android:layout_width">0dp</item>
     </style>
     <style name="edit_send" parent="Theme.AppCompat.Light.DarkActionBar">
-        <item name="android:textColor">#ffffff</item>
+        <item name="android:textColor">#fff</item>
         <item name="android:color">#fff</item>
         <item name="android:background">#66333333</item>
         <item name="android:layout_marginBottom">0dp</item>
@@ -112,9 +141,13 @@
 
     <style name="nav_title" parent="Theme.AppCompat.Light.DarkActionBar">
         <item name="android:textColor">#fff</item>
-        <item name="android:layout_marginBottom">10dp</item>
-        <item name="android:layout_marginTop">10dp</item>
-        <item name="android:textSize">21sp</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_gravity">center</item>
+        <item name="android:layout_marginBottom">15dp</item>
+        <item name="android:layout_marginLeft">10dp</item>
+        <item name="android:layout_marginTop">15dp</item>
     </style>
 
 </resources>

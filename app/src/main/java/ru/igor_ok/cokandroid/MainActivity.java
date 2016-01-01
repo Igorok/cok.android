@@ -1,21 +1,25 @@
 package ru.igor_ok.cokandroid;
 
 
+import android.content.Context;
 import android.content.SharedPreferences;
-import android.net.Uri;
 import android.app.FragmentManager;
 
 
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import java.util.HashMap;
 import java.util.List;
@@ -36,7 +40,7 @@ public class MainActivity extends ActionBarActivity
     private ArrayAdapter<String> strAdapter;
     private Map<String, String> usr;
 
-    private void fragmentLaunch(String _fId, Map<String, String> _fData) {
+    public void fragmentLaunch(String _fId, Map<String, String> _fData) {
         SharedPreferences fStorage = getSharedPreferences("fragment", 0);
         SharedPreferences.Editor editor = fStorage.edit();
         editor.putString("fId", _fId);
@@ -191,14 +195,24 @@ public class MainActivity extends ActionBarActivity
         fragmentLaunch(_fId, _fData);
     }
 
-    @Override
-    public void onFragmentMainInteraction (Uri uri) {
-
-    }
 
     public void setTitle (String _title) {
         android.support.v7.app.ActionBar actionBar = MainActivity.this.getSupportActionBar();
         actionBar.setTitle(_title);
+    }
+
+    public void getUserList() {
+        Map<String, String> _fData = new HashMap<String, String>();
+        fragmentLaunch("uList", _fData);
+    }
+    public void getFriendList() {
+        Map<String, String> _fData = new HashMap<String, String>();
+        fragmentLaunch("fList", _fData);
+    }
+
+    public void getChatList() {
+        Map<String, String> _fData = new HashMap<String, String>();
+        fragmentLaunch("cRoomList", _fData);
     }
 
     public void getUserDetail(String userId) {
@@ -240,19 +254,9 @@ public class MainActivity extends ActionBarActivity
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
 
-        strAdapter = new ArrayAdapter<String> (this, R.layout.drawer_nav_item);
-        int mSize = mList.size();
-        for (int i = 0; i < mSize; i ++) {
-            strAdapter.add(mList.get(i).title);
-        }
-        navList.setAdapter(strAdapter);
-
-        navList.setClickable(true);
-        navList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                fragmentLaunch(mList.get(position).key, null);
-            }
-        });
+        NavListAdapter adapter = new NavListAdapter(this, R.layout.drawer_nav_item);
+        adapter.addAll(mList);
+        navList.setAdapter(adapter);
 
         fragmentRestore();
     }
@@ -276,3 +280,5 @@ public class MainActivity extends ActionBarActivity
         }
     }
 }
+
+

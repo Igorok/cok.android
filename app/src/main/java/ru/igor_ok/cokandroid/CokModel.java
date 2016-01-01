@@ -2,6 +2,7 @@ package ru.igor_ok.cokandroid;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.media.Image;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
@@ -31,6 +32,12 @@ import java.util.Map;
 
 import android.os.AsyncTask;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
@@ -51,6 +58,7 @@ public class CokModel {
     public class mItem {
         public String key;
         public String title;
+        public Integer icon;
     }
     private List<mItem> mList = new ArrayList<mItem>();
 
@@ -68,21 +76,25 @@ public class CokModel {
 
         mItem mi = new mItem();
         mi.key = "Main";
+        mi.icon = R.drawable.ic_action;
         mi.title = mContext.getString(R.string.title_activity_main) + " " + user.get("login");
         mList.add(mi);
 
         mi = new mItem();
         mi.key = "uList";
+        mi.icon = R.drawable.ic_users_w;
         mi.title = mContext.getString(R.string.title_activity_user_list);
         mList.add(mi);
 
         mi = new mItem();
         mi.key = "fList";
+        mi.icon = R.drawable.ic_friends_w;
         mi.title = "Friends";
         mList.add(mi);
 
         mi = new mItem();
         mi.key = "cRoomList";
+        mi.icon = R.drawable.ic_chat_w;
         mi.title = "Chat rooms";
         mList.add(mi);
     }
@@ -230,6 +242,58 @@ public class CokModel {
         return result.toString().trim();
     }
 }
+
+
+
+class NavListAdapter extends ArrayAdapter<CokModel.mItem> {
+    private int layoutResourceId;
+    private Context mContext;
+    public NavListAdapter(Context context, int textViewResourceId) {
+        super(context, textViewResourceId);
+        mContext = context;
+        layoutResourceId = textViewResourceId;
+    }
+
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent) {
+        try {
+            final CokModel.mItem item = getItem(position);
+            View v = null;
+            if (convertView == null) {
+                LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                v = inflater.inflate(layoutResourceId, null);
+            } else {
+                v = convertView;
+            }
+
+            ImageView nav_icon = (ImageView) v.findViewById(R.id.nav_icon);
+            TextView nav_title = (TextView) v.findViewById(R.id.nav_title);
+
+            nav_icon.setImageResource(item.icon);
+            nav_title.setText(item.title);
+
+            v.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View cView) {
+                    if(mContext instanceof MainActivity) {
+                        ((MainActivity)mContext).fragmentLaunch(item.key, null);
+                    }
+                }
+            });
+            return v;
+        } catch (Exception ex) {
+            Log.e("adapter exception ", "" + ex.getMessage());
+            return null;
+        }
+    }
+}
+
+
+
+
+
+
+
 
 
 
